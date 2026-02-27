@@ -33,6 +33,7 @@ export function PromptPanel() {
     if (!prompt.trim() || isGenerating) return
     setIsGenerating(true)
     setSelectedImage(null)
+    setCurrentImages([]) // Clear existing images
 
     try {
       // Step 1: Enhance prompt (simplified without style profile)
@@ -54,7 +55,7 @@ export function PromptPanel() {
       const enhanced: EnhancePromptResponse = await enhanceRes.json()
       setEnhancedPrompt(enhanced.enhancedPrompt)
 
-      // Step 2: Generate images
+      // Step 2: Generate images with streaming
       const genRes = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,15 +66,54 @@ export function PromptPanel() {
           quality,
         }),
       })
-      const generated: GenerateResponse = await genRes.json()
-      setCurrentImages(generated.images)
-      addToHistory(generated.images)
+
+      if (!genRes.body) {
+        throw new Error("No response body")
+      }
+
+      // Read the streaming response
+      const reader = genRes.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      const allImages: any[] = []
+
+      while (true) {
+        const { done, value } = await reader.read()
+        
+        if (done) break
+        
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        
+        // Process all complete lines
+        for (let i = 0; i < lines.length - 1; i++) {
+          const line = lines[i].trim()
+          if (line) {
+            try {
+              const image = JSON.parse(line)
+              allImages.push(image)
+              // Update UI immediately with new image
+              setCurrentImages([...allImages])
+            } catch (e) {
+              console.error("Failed to parse image:", e)
+            }
+          }
+        }
+        
+        // Keep the last incomplete line in the buffer
+        buffer = lines[lines.length - 1]
+      }
+
+      // Add to history once all images are loaded
+      if (allImages.length > 0) {
+        addToHistory(allImages)
+      }
     } catch (error) {
       console.error("Generation failed:", error)
     } finally {
       setIsGenerating(false)
     }
-  }, [prompt, isGenerating, setIsGenerating, setSelectedImage, aspectRatio, setEnhancedPrompt, setCurrentImages, addToHistory, quality])
+  }, [prompt, isGenerating, setIsGenerating, setSelectedImage, setCurrentImages, aspectRatio, setEnhancedPrompt, addToHistory, quality])
 
   return (
     <motion.div

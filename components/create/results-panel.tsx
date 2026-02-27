@@ -66,10 +66,52 @@ export function ResultsPanel() {
             quality,
           }),
         })
-        const generated: GenerateResponse = await genRes.json()
-        setCurrentImages(generated.images)
-        addToHistory(generated.images)
+
+        if (!genRes.body) {
+          throw new Error("No response body")
+        }
+
+        // Read the streaming response
+        const reader = genRes.body.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+        const allImages: any[] = []
+
+        // Clear existing images
+        setCurrentImages([])
         setSelectedImage(null)
+
+        while (true) {
+          const { done, value } = await reader.read()
+          
+          if (done) break
+          
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          
+          // Process all complete lines
+          for (let i = 0; i < lines.length - 1; i++) {
+            const line = lines[i].trim()
+            if (line) {
+              try {
+                const image = JSON.parse(line)
+                allImages.push(image)
+                // Update UI immediately with new image
+                setCurrentImages([...allImages])
+              } catch (e) {
+                console.error("Failed to parse image:", e)
+              }
+            }
+          }
+          
+          // Keep the last incomplete line in the buffer
+          buffer = lines[lines.length - 1]
+        }
+
+        // Add to history once all images are loaded
+        if (allImages.length > 0) {
+          addToHistory(allImages)
+        }
       } catch (error) {
         console.error("Refinement failed:", error)
       } finally {
