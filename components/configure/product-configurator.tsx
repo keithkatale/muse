@@ -112,6 +112,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
               imageUrl={image.url}
               frame={frame}
               room={profile?.room || "living-room"}
+              size={size}
             />
           </motion.div>
 
