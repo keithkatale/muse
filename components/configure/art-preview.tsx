@@ -53,25 +53,25 @@ const FRAME_STYLES: Record<string, {
     boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
   },
   "black": {
-    borderWidth: "16px",
+    borderWidth: "8px",
     borderColor: "#1a1a1a",
     boxShadow: "0 15px 50px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.1)",
     background: "linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%)",
   },
   "white": {
-    borderWidth: "16px",
+    borderWidth: "8px",
     borderColor: "#f8f8f8",
     boxShadow: "0 15px 50px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.05)",
     background: "linear-gradient(135deg, #ffffff 0%, #f8f8f8 50%, #f0f0f0 100%)",
   },
   "natural": {
-    borderWidth: "16px",
+    borderWidth: "8px",
     borderColor: "#d4a574",
     boxShadow: "0 15px 50px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(0,0,0,0.1)",
     background: "linear-gradient(135deg, #e0b589 0%, #d4a574 50%, #c89960 100%)",
   },
   "walnut": {
-    borderWidth: "16px",
+    borderWidth: "8px",
     borderColor: "#5d4037",
     boxShadow: "0 15px 50px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.05)",
     background: "linear-gradient(135deg, #6d4c41 0%, #5d4037 50%, #4e342e 100%)",
@@ -163,7 +163,7 @@ export function ArtPreview({
                 {/* Mat layer */}
                 {hasMat && (
                   <div 
-                    className="p-4 sm:p-6"
+                    className="p-3 sm:p-4"
                     style={{ backgroundColor: matColor }}
                   >
                     <div className="relative aspect-[3/4] w-32 sm:w-40 md:w-56 lg:w-64 shadow-inner">
@@ -228,7 +228,7 @@ export function ArtPreview({
                   {/* Mat layer */}
                   {hasMat && (
                     <div 
-                      className="p-2 sm:p-3"
+                      className="p-1.5 sm:p-2"
                       style={{ backgroundColor: matColor }}
                     >
                       <div className="relative aspect-[3/4] w-14 sm:w-20 md:w-28 lg:w-36 shadow-inner">
