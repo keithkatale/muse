@@ -113,6 +113,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
               frame={frame}
               room={profile?.room || "living-room"}
               size={size}
+              mat={mat}
             />
           </motion.div>
 
