@@ -40,7 +40,7 @@ const SIZE_SCALES: Record<string, number> = {
   "30x40": 1.5,
 }
 
-// Frame styles with realistic effects
+// Frame styles (no shadow on art overlay)
 const FRAME_STYLES: Record<string, { 
   borderWidth: string
   borderColor: string
@@ -50,36 +50,36 @@ const FRAME_STYLES: Record<string, {
   "none": {
     borderWidth: "0px",
     borderColor: "transparent",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
+    boxShadow: "none",
   },
   "black": {
     borderWidth: "8px",
     borderColor: "#1a1a1a",
-    boxShadow: "0 15px 50px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.1)",
+    boxShadow: "none",
     background: "linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%)",
   },
   "white": {
     borderWidth: "8px",
     borderColor: "#f8f8f8",
-    boxShadow: "0 15px 50px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.05)",
+    boxShadow: "none",
     background: "linear-gradient(135deg, #ffffff 0%, #f8f8f8 50%, #f0f0f0 100%)",
   },
   "natural": {
     borderWidth: "8px",
     borderColor: "#d4a574",
-    boxShadow: "0 15px 50px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(0,0,0,0.1)",
+    boxShadow: "none",
     background: "linear-gradient(135deg, #e0b589 0%, #d4a574 50%, #c89960 100%)",
   },
   "walnut": {
     borderWidth: "8px",
     borderColor: "#5d4037",
-    boxShadow: "0 15px 50px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.05)",
+    boxShadow: "none",
     background: "linear-gradient(135deg, #6d4c41 0%, #5d4037 50%, #4e342e 100%)",
   },
   "float": {
     borderWidth: "0px",
     borderColor: "transparent",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,0,0,0.1)",
+    boxShadow: "none",
   },
 }
 
@@ -173,6 +173,7 @@ export function ArtPreview({
                         fill
                         sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, (max-width: 1024px) 224px, 256px"
                         className="object-cover"
+                        unoptimized
                       />
                     </div>
                   </div>
@@ -187,6 +188,7 @@ export function ArtPreview({
                       fill
                       sizes="(max-width: 640px) 160px, (max-width: 768px) 192px, (max-width: 1024px) 256px, 288px"
                       className="object-cover"
+                      unoptimized
                     />
                   </div>
                 )}
@@ -238,6 +240,7 @@ export function ArtPreview({
                           fill
                           sizes="(max-width: 640px) 56px, (max-width: 768px) 80px, (max-width: 1024px) 112px, 144px"
                           className="object-cover"
+                          unoptimized
                         />
                       </div>
                     </div>
@@ -252,6 +255,7 @@ export function ArtPreview({
                         fill
                         sizes="(max-width: 640px) 80px, (max-width: 768px) 112px, (max-width: 1024px) 144px, 176px"
                         className="object-cover"
+                        unoptimized
                       />
                     </div>
                   )}
@@ -305,6 +309,7 @@ export function ArtPreview({
                 fill
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 className="object-cover scale-150"
+                unoptimized
               />
             </motion.div>
           )}

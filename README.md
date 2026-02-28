@@ -17,18 +17,18 @@ Muse is a premium AI-powered wall art store built with Next.js. Users discover t
        +--+----------+----+  +------------------------+
           |          |
     +-----v----+ +---v-----------+
-    | Nano     | | Printful      |
-    | Banana   | | API v2        |
-    | API      | | (Orders +     |
-    | (image   | |  Files +      |
-    |  gen)    | |  Products)    |
-    +----------+ +---------------+
+    | fal.ai   | | Printful      |
+    | FLUX     | | API v2        |
+    | (image   | | (Orders +     |
+    |  gen)    | |  Files +      |
+    +----------+ |  Products)    |
+                +---------------+
 ```
 
-**Data flow:** Style quiz -> style profile in context -> user prompt -> API enhances prompt via LLM + style profile -> image generation API returns 4 variants -> user selects and configures product -> Shopify cart -> Shopify checkout/payment -> Printful fulfillment webhook -> print, ship, track.
+**Data flow:** Style quiz -> style profile in context -> user prompt -> API enhances prompt via LLM + style profile -> image generation API (fal.ai FLUX) returns 4 variants -> user selects and configures product -> Shopify cart -> Shopify checkout/payment -> Printful fulfillment webhook -> print, ship, track.
 
-> **Integration Status:** 
-> - ✅ **Image Generation**: Fully integrated with Google Gemini API (Nano Banana). Falls back to mock images if no API key is provided.
+> **Integration Status:**
+> - **Image Generation**: Integrated with fal.ai FLUX model. Falls back to mock images if FAL_KEY is not set.
 > - 🔄 **Shopify Storefront**: Mock implementation ready for production integration
 > - 🔄 **Printful**: Mock implementation ready for production integration
 
@@ -62,7 +62,7 @@ Muse is a premium AI-powered wall art store built with Next.js. Users discover t
 | Endpoint | Purpose |
 |----------|---------|
 | `POST /api/enhance-prompt` | Enhances user prompt with style profile context (mock LLM) |
-| `POST /api/generate` | Generates image variants from enhanced prompt (mock image gen) |
+| `POST /api/generate` | Generates image variants via fal.ai FLUX (streams newline-JSON); mock if no FAL_KEY |
 | `POST /api/upload-image` | Uploads selected image for print production (mock) |
 | `POST /api/fulfill-order` | Creates Printful fulfillment order (mock) |
 
@@ -151,7 +151,7 @@ Pricing is calculated dynamically from base size price + medium upcharge + frame
 
 - Node.js 18+
 - npm (or pnpm)
-- Google Gemini API key ([Get one here](https://aistudio.google.com/app/apikey))
+- fal.ai API key ([Get one here](https://fal.ai/dashboard/keys))
 
 ### Installation
 
@@ -166,9 +166,9 @@ npm install
 cp .env.local.example .env.local
 ```
 
-2. Add your Google Gemini API key to `.env.local`:
+2. Add your fal.ai API key to `.env.local`:
 ```env
-GOOGLE_AI_API_KEY=your_actual_api_key_here
+FAL_KEY=your_actual_api_key_here
 ```
 
 ### Development
@@ -179,7 +179,7 @@ npm run dev
 
 The app runs at [http://localhost:3000](http://localhost:3000) with Turbopack for fast refresh.
 
-**Note**: Without a Gemini API key, the app will use mock images. See [SETUP.md](./SETUP.md) for detailed setup instructions.
+**Note**: Without a fal.ai API key (FAL_KEY), the app will use mock images. See [SETUP.md](./SETUP.md) for detailed setup instructions if present.
 
 ### Build
 
@@ -193,11 +193,11 @@ npm start
 ### Required for Image Generation
 
 ```env
-# Google Gemini API (Nano Banana) - REQUIRED for real image generation
-GOOGLE_AI_API_KEY=your_api_key_here
+# fal.ai (FLUX) - REQUIRED for real image generation
+FAL_KEY=your_api_key_here
 ```
 
-Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+Get your API key from [fal.ai dashboard](https://fal.ai/dashboard/keys).
 
 Without this key, the app will fall back to mock images from the gallery.
 
@@ -218,15 +218,16 @@ ANTHROPIC_API_KEY=xxxxx
 
 ## Swapping Mock Services for Live APIs
 
-### Image Generation ✅ DONE
+### Image Generation
 
-Image generation is fully integrated with Google Gemini API (Nano Banana). The implementation:
-- Uses `gemini-2.5-flash-image` for standard quality (fast, efficient)
-- Uses `gemini-3-pro-image-preview` for premium quality (high-res, advanced reasoning)
-- Automatically falls back to mock images if no API key is provided
-- Returns base64-encoded images as data URLs
+Image generation is integrated with fal.ai using the FLUX model. The implementation:
 
-See [SETUP.md](./SETUP.md) for configuration details.
+- Uses `fal-ai/flux/dev` for both standard and premium quality
+- Premium uses higher `num_inference_steps` and `guidance_scale` for finer detail
+- Automatically falls back to mock images if FAL_KEY is not set
+- Returns CDN URLs for generated images (payloads retained ~30 days; for long-term fulfillment you can persist via `/api/upload-image`)
+
+See [fal.ai Model APIs](https://docs.fal.ai/model-apis) and [FLUX dev](https://fal.ai/models/fal-ai/flux/dev) for details.
 
 ### Shopify Storefront 🔄 TODO
 

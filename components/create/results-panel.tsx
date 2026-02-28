@@ -156,9 +156,10 @@ export function ResultsPanel() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  transition={{ delay: i * 0.05 }}
                   className="aspect-[3/4] overflow-hidden rounded-lg bg-muted"
                 >
-                  <div className="h-full w-full animate-pulse bg-gradient-to-br from-muted via-muted-foreground/5 to-muted" />
+                  <div className="h-full w-full animate-shimmer" />
                 </motion.div>
               ))
             : currentImages.map((img, i) => (
@@ -179,12 +180,14 @@ export function ResultsPanel() {
                       : "border-transparent hover:border-border"
                   )}
                 >
+                  <div className="absolute inset-0 animate-shimmer" />
                   <Image
                     src={img.url}
                     alt={`Generated variant ${i + 1}`}
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                     className="object-cover"
+                    unoptimized
                   />
                   {selectedImage?.id === img.id && (
                     <motion.div
@@ -281,6 +284,7 @@ export function ResultsPanel() {
                           fill
                           sizes="32px"
                           className="object-cover"
+                          unoptimized
                         />
                       </div>
                     ))}

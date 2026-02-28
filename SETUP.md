@@ -1,40 +1,40 @@
 # Muse - Setup Guide for Real Image Generation
 
-This guide will help you set up real AI image generation using Google's Gemini API (Nano Banana).
+This guide will help you set up real AI image generation using fal.ai's FLUX model.
 
 ## Quick Start
 
-### 1. Get Your Gemini API Key
+### 1. Get Your fal.ai API Key
 
-1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click "Get API Key" or "Create API Key"
-4. Copy your API key
+1. Visit [fal.ai dashboard - Keys](https://fal.ai/dashboard/keys)
+2. Sign in or create an account
+3. Create a new API key (use API scope for model access)
+4. Copy the key (format: `key_id:key_secret`)
 
 ### 2. Configure Environment Variables
 
 1. Create a `.env.local` file in the project root:
 
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env.local
 ```
 
 2. Open `.env.local` and add your API key:
 
 ```env
-GOOGLE_AI_API_KEY=your_actual_api_key_here
+FAL_KEY=your_actual_fal_key_here
 ```
 
 ### 3. Install Dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 4. Run the Development Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000) to see your app!
@@ -45,40 +45,35 @@ Visit [http://localhost:3000](http://localhost:3000) to see your app!
 
 1. **User Input** → User enters a prompt in the Generation Studio
 2. **Prompt Enhancement** → The prompt is enhanced with style profile data
-3. **Gemini API Call** → Enhanced prompt is sent to Gemini's image generation model
-4. **Image Response** → Gemini returns base64-encoded images
-5. **Display** → Images are displayed as data URLs in the UI
+3. **fal.ai API Call** → Enhanced prompt is sent to fal's FLUX model (`fal-ai/flux/dev`)
+4. **Image Response** → fal returns image URLs (CDN-hosted; retained ~30 days)
+5. **Display** → Images are displayed in the UI
 
-### Models Available
+### Models and Quality
 
-- **Standard Quality**: `gemini-2.5-flash-image` (Nano Banana)
+- **Standard Quality**: `fal-ai/flux/dev` with default inference steps (28) and guidance scale (3.5)
   - Fast generation
-  - 1024px resolution
-  - Lower cost
   - Best for: Quick iterations, high-volume generation
 
-- **Premium Quality**: `gemini-3-pro-image-preview` (Nano Banana Pro)
-  - Advanced reasoning ("Thinking" mode)
-  - Up to 4K resolution (configured for 2K in this app)
-  - Better text rendering
-  - Google Search grounding
-  - Best for: Professional assets, complex prompts
+- **Premium Quality**: Same model with higher `num_inference_steps` (38) and `guidance_scale` (4)
+  - Finer detail and prompt adherence
+  - Best for: Final artwork, complex prompts
 
 ### Aspect Ratios Supported
 
-- Portrait (3:4): 864x1184
-- Square (1:1): 1024x1024
-- Landscape (4:3): 1184x864
-- Wide (16:9): 1344x768
+- Portrait (3:4): 864x1184 → fal `portrait_4_3`
+- Square (1:1): 1024x1024 → fal `square_hd`
+- Landscape (4:3): 1184x864 → fal `landscape_4_3`
+- Wide (16:9): 1344x768 → fal `landscape_16_9`
 
 ## Testing the Integration
 
 ### 1. Without API Key (Mock Mode)
 
-If you don't add an API key, the app will automatically fall back to mock mode using the gallery images. You'll see a warning in the console:
+If you don't add `FAL_KEY`, the app will automatically fall back to mock mode using the gallery images. You'll see a warning in the console:
 
 ```
-⚠️  GOOGLE_AI_API_KEY not found - using mock images
+FAL_KEY not found - using mock images
 ```
 
 ### 2. With API Key (Real Generation)
@@ -89,29 +84,28 @@ Once you add your API key:
 2. Navigate to `/create` (Generation Studio)
 3. Enter a prompt like: "A serene mountain landscape at sunset with vibrant colors"
 4. Click "Generate Art"
-5. Wait 5-10 seconds for real AI-generated images
+5. Wait for real AI-generated images (typically a few seconds per batch)
 
 ## Troubleshooting
 
 ### Images Not Generating
 
 **Problem**: API key not working
-**Solution**: 
-- Verify your API key is correct in `.env.local`
+**Solution**:
+- Verify `FAL_KEY` is set correctly in `.env.local` (format: `key_id:key_secret`)
 - Restart the dev server after adding the key
 - Check the console for error messages
 
-**Problem**: Rate limit errors
+**Problem**: Rate limit or quota errors
 **Solution**:
-- Gemini has rate limits (15 requests per minute for free tier)
-- Wait a minute and try again
-- Consider upgrading your API quota
+- Check your fal.ai dashboard for usage and limits
+- Wait and try again; implement backoff if needed
 
 ### Mock Images Still Showing
 
 **Problem**: Still seeing gallery images after adding API key
 **Solution**:
-- Restart the development server (`npm run dev`)
+- Restart the development server (`pnpm dev`)
 - Clear your browser cache
 - Check that `.env.local` is in the project root (not in a subdirectory)
 
@@ -119,32 +113,26 @@ Once you add your API key:
 
 **Problem**: 400 Bad Request
 **Solution**:
-- Check that your prompt isn't too long (max ~2000 characters)
-- Verify the aspect ratio is valid
+- Check that your prompt is valid and not empty
+- Verify the aspect ratio is one of the supported values
 
-**Problem**: 429 Too Many Requests
+**Problem**: 429 or 5xx errors
 **Solution**:
-- You've hit the rate limit
-- Wait 60 seconds before trying again
+- Check [fal.ai status](https://status.fal.ai/)
+- Retry after a short delay; the route falls back to mock images on error
 
 ## Cost Considerations
 
-### Gemini API Pricing (as of Feb 2026)
+### fal.ai Pricing
 
-- **gemini-2.5-flash-image**: ~$0.0025 per image
-- **gemini-3-pro-image-preview**: ~$0.01-0.02 per image (varies by resolution)
-
-### Free Tier
-
-- Google provides a generous free tier
-- Check current limits at [Google AI Pricing](https://ai.google.dev/pricing)
+- FLUX dev is billed per megapixel (see [fal.ai pricing](https://fal.ai/pricing))
+- Check current rates and free tier at the fal dashboard
 
 ### Optimization Tips
 
 1. Use Standard quality for testing and iterations
 2. Use Premium quality only for final production images
-3. Implement caching for repeated prompts
-4. Consider batch generation for multiple images
+3. Consider persisting image URLs via `/api/upload-image` if you need long-term storage for checkout/fulfillment
 
 ## Advanced Configuration
 
@@ -152,38 +140,18 @@ Once you add your API key:
 
 Edit `app/api/generate/route.ts` to customize:
 
-```typescript
-// Change default resolution for premium
-imageConfig: {
-  aspectRatio: aspectRatio,
-  imageSize: "4K"  // Options: "1K", "2K", "4K"
-}
-
-// Add Google Search grounding (premium only)
-tools: [{ googleSearch: {} }]
-```
-
-### Adding More Models
-
-You can add support for other Gemini models by modifying the model selection logic:
-
-```typescript
-const modelName = quality === "premium" 
-  ? "gemini-3-pro-image-preview" 
-  : quality === "ultra"
-  ? "gemini-3-ultra-image-preview"  // If available
-  : "gemini-2.5-flash-image"
-```
+- `num_inference_steps`: higher for more detail (e.g. 38 for premium)
+- `guidance_scale`: higher for stronger prompt adherence
+- `image_size`: use fal's enum (`square_hd`, `portrait_4_3`, etc.)
 
 ## Next Steps
 
 ### Production Deployment
 
-1. **Environment Variables**: Add `GOOGLE_AI_API_KEY` to your hosting platform
-2. **Rate Limiting**: Implement rate limiting on your API routes
-3. **Caching**: Cache generated images to reduce API calls
-4. **Error Handling**: Add user-friendly error messages
-5. **Analytics**: Track generation success rates
+1. **Environment Variables**: Add `FAL_KEY` to your hosting platform
+2. **Rate Limiting**: Implement rate limiting on your API routes if needed
+3. **Error Handling**: The route already falls back to mock images on fal errors
+4. **Long-lived URLs**: For Shopify/Printful, consider uploading generated images via `/api/upload-image` and storing the returned URL in the cart
 
 ### Optional Integrations
 
@@ -196,9 +164,10 @@ See the main README.md for details on these integrations.
 
 ## Support
 
-- [Gemini API Documentation](https://ai.google.dev/gemini-api/docs/image-generation)
-- [Google AI Studio](https://aistudio.google.com/)
-- [Gemini API Pricing](https://ai.google.dev/pricing)
+- [fal.ai Documentation](https://docs.fal.ai/)
+- [fal.ai Model APIs](https://docs.fal.ai/model-apis)
+- [FLUX dev model](https://fal.ai/models/fal-ai/flux/dev)
+- [fal.ai Pricing](https://fal.ai/pricing)
 
 ## License
 

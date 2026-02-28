@@ -5,8 +5,9 @@ import { motion } from "framer-motion"
 import { Sparkles, Wand2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { useGeneration } from "@/lib/contexts"
-import { STARTING_CONCEPTS, ASPECT_RATIOS } from "@/lib/mock-data"
+import { useGeneration, useStyleProfile } from "@/lib/contexts"
+import { useRotatingConcepts } from "@/lib/hooks/use-rotating-concepts"
+import { ASPECT_RATIOS } from "@/lib/mock-data"
 import type { EnhancePromptResponse, GenerateResponse } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -26,8 +27,8 @@ export function PromptPanel() {
     aspectRatio, setAspectRatio,
     quality, setQuality,
   } = useGeneration()
-
-  const concepts = STARTING_CONCEPTS.slice(0, 6)
+  const { profile } = useStyleProfile()
+  const { concepts } = useRotatingConcepts()
 
   const handleGenerate = useCallback(async () => {
     if (!prompt.trim() || isGenerating) return
@@ -36,19 +37,23 @@ export function PromptPanel() {
     setCurrentImages([]) // Clear existing images
 
     try {
-      // Step 1: Enhance prompt (simplified without style profile)
+      // Use quiz profile when available; otherwise default to realistic/photographic
+      const styleProfile = profile && profile.styles.length > 0
+        ? profile
+        : {
+            palettes: ["warm-sunset"],
+            styles: ["realistic"],
+            subjects: ["landscapes"],
+            mood: "calm",
+            room: "living-room",
+          }
+
       const enhanceRes = await fetch("/api/enhance-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userInput: prompt,
-          styleProfile: {
-            palettes: ["warm-sunset"],
-            styles: ["abstract"],
-            subjects: ["landscapes"],
-            mood: "calm",
-            room: "living-room",
-          },
+          styleProfile,
           aspectRatio,
         }),
       })
@@ -113,7 +118,7 @@ export function PromptPanel() {
     } finally {
       setIsGenerating(false)
     }
-  }, [prompt, isGenerating, setIsGenerating, setSelectedImage, setCurrentImages, aspectRatio, setEnhancedPrompt, addToHistory, quality])
+  }, [prompt, isGenerating, setIsGenerating, setSelectedImage, setCurrentImages, aspectRatio, setEnhancedPrompt, addToHistory, quality, profile])
 
   return (
     <motion.div

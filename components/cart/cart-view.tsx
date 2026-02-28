@@ -121,6 +121,7 @@ export function CartView() {
                       fill
                       sizes="80px"
                       className="object-cover"
+                      unoptimized
                     />
                   </div>
                   <div className="flex flex-1 flex-col justify-between">

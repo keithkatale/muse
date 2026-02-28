@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     palettes ? `using ${palettes}` : "",
     mood ? `evoking a ${mood}` : "",
     aspect ? `composed for ${aspect}` : "",
-    "Fine art quality, suitable for museum-quality wall art print. High detail, professional composition, beautiful lighting.",
+    "Photographic, realistic, high detail. Professional composition, beautiful natural lighting. Suitable for wall art in households. Content only, no background environment or frame.",
   ]
     .filter(Boolean)
     .join(". ")

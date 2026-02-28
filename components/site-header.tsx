@@ -19,9 +19,9 @@ export function SiteHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="font-serif text-2xl tracking-tight text-foreground hover:text-accent transition-colors">
+    <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border/50">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <Link href="/" className="font-serif text-xl tracking-tight text-foreground hover:text-muted-foreground transition-colors">
           Muse
         </Link>
 
@@ -32,8 +32,8 @@ export function SiteHeader() {
               key={link.href}
               href={link.href}
               className={cn(
-                "text-sm tracking-wide transition-colors hover:text-accent",
-                pathname === link.href ? "text-foreground font-medium" : "text-muted-foreground"
+                "text-sm tracking-wide transition-colors",
+                pathname === link.href ? "text-foreground" : "text-muted-foreground hover:text-accent"
               )}
             >
               {link.label}
@@ -49,7 +49,7 @@ export function SiteHeader() {
           >
             <ShoppingBag className="h-5 w-5" />
             {itemCount > 0 && (
-              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-medium text-accent-foreground">
+              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background">
                 {itemCount}
               </span>
             )}
@@ -67,7 +67,7 @@ export function SiteHeader() {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-card">
+        <div className="md:hidden border-t border-border/50 bg-background">
           <nav className="flex flex-col gap-4 px-6 py-4">
             {NAV_LINKS.map((link) => (
               <Link
@@ -75,8 +75,8 @@ export function SiteHeader() {
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  "text-sm tracking-wide transition-colors hover:text-accent",
-                  pathname === link.href ? "text-foreground font-medium" : "text-muted-foreground"
+                  "text-sm tracking-wide transition-colors",
+                  pathname === link.href ? "text-foreground" : "text-muted-foreground hover:text-accent transition-colors"
                 )}
               >
                 {link.label}
