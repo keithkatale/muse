@@ -41,6 +41,26 @@ export async function POST(request: Request) {
     playful: "playful, whimsical, and joyful atmosphere",
   }
 
+  const subjectMap: Record<string, string> = {
+    landscapes: "expansive natural landscapes and horizons",
+    florals: "lush, detailed florals and botanicals",
+    geometric: "bold geometric shapes and abstract forms",
+    animals: "expressive animal portraits and silhouettes",
+    architecture: "striking architectural forms and cityscapes",
+    portraits: "intimate human portraits and figures",
+    space: "cosmic space scenes with stars, planets, and nebulae",
+    "still-life": "carefully composed still life arrangements",
+  }
+
+  const roomMap: Record<string, string> = {
+    "living-room": "a living room focal wall above a sofa",
+    bedroom: "a calming bedroom setting above a headboard",
+    office: "a modern home office or studio backdrop",
+    dining: "a dining room feature wall",
+    nursery: "a soft, comforting nursery space",
+    hallway: "a hallway or entryway gallery wall",
+  }
+
   const aspectMap: Record<string, string> = {
     "3:4": "portrait orientation composition",
     "1:1": "square balanced composition",
@@ -50,21 +70,31 @@ export async function POST(request: Request) {
 
   const palettes = styleProfile.palettes.map((p) => paletteMap[p] || p).join(" and ")
   const styles = styleProfile.styles.map((s) => styleMap[s] || s).join(" blended with ")
+  const subjects = styleProfile.subjects.map((s) => subjectMap[s] || s).join(" and ")
   const mood = styleProfile.mood ? moodMap[styleProfile.mood] || styleProfile.mood : ""
+  const room = styleProfile.room ? roomMap[styleProfile.room] || styleProfile.room : ""
   const aspect = aspectMap[aspectRatio] || ""
 
+  const baseSubject = subjects ? `Artwork featuring ${subjects}` : ""
+  const roomContext = room ? `designed for display in ${room}` : ""
+  const core = userInput || baseSubject
+
   const enhancedPrompt = [
-    userInput,
+    core,
     styles ? `in ${styles}` : "",
     palettes ? `using ${palettes}` : "",
     mood ? `evoking a ${mood}` : "",
+    roomContext,
     aspect ? `composed for ${aspect}` : "",
     "Photographic, realistic, high detail. Professional composition, beautiful natural lighting. Suitable for wall art in households. Content only, no background environment or frame.",
   ]
     .filter(Boolean)
     .join(". ")
 
-  const conceptSummary = `${userInput} with ${styleProfile.styles[0] || "artistic"} style`
+  const primarySubject = styleProfile.subjects[0] || "your chosen subject"
+  const primaryStyle = styleProfile.styles[0] || "artistic"
+  const baseSummary = userInput || `Art featuring ${primarySubject}`
+  const conceptSummary = `${baseSummary} in ${primaryStyle} style`
 
   const response: EnhancePromptResponse = { enhancedPrompt, conceptSummary }
   return NextResponse.json(response)

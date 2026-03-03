@@ -27,26 +27,29 @@ export function PromptPanel() {
     aspectRatio, setAspectRatio,
     quality, setQuality,
   } = useGeneration()
-  const { profile } = useStyleProfile()
-  const { concepts } = useRotatingConcepts()
+  const { profile, isQuizComplete } = useStyleProfile()
+  const { concepts } = useRotatingConcepts(profile ?? null)
+
+  const hasStyleProfile = !!profile && isQuizComplete
 
   const handleGenerate = useCallback(async () => {
-    if (!prompt.trim() || isGenerating) return
+    if (isGenerating) return
+    if (!hasStyleProfile && !prompt.trim()) return
     setIsGenerating(true)
     setSelectedImage(null)
     setCurrentImages([]) // Clear existing images
 
     try {
       // Use quiz profile when available; otherwise default to realistic/photographic
-      const styleProfile = profile && profile.styles.length > 0
-        ? profile
+      const styleProfile = hasStyleProfile
+        ? profile!
         : {
-            palettes: ["warm-sunset"],
-            styles: ["realistic"],
-            subjects: ["landscapes"],
-            mood: "calm",
-            room: "living-room",
-          }
+          palettes: ["warm-sunset"],
+          styles: ["realistic"],
+          subjects: ["landscapes"],
+          mood: "calm",
+          room: "living-room",
+        }
 
       const enhanceRes = await fetch("/api/enhance-prompt", {
         method: "POST",
@@ -118,7 +121,7 @@ export function PromptPanel() {
     } finally {
       setIsGenerating(false)
     }
-  }, [prompt, isGenerating, setIsGenerating, setSelectedImage, setCurrentImages, aspectRatio, setEnhancedPrompt, addToHistory, quality, profile])
+  }, [prompt, isGenerating, setIsGenerating, setSelectedImage, setCurrentImages, aspectRatio, setEnhancedPrompt, addToHistory, quality, profile, hasStyleProfile])
 
   return (
     <motion.div
@@ -148,7 +151,14 @@ export function PromptPanel() {
 
       {/* Prompt Input */}
       <div>
-        <p className="mb-3 text-xs uppercase tracking-[0.15em] text-muted-foreground">Describe Your Art</p>
+        <p className="mb-1 text-xs uppercase tracking-[0.15em] text-muted-foreground">
+          Describe Your Art {hasStyleProfile && "(optional)"}
+        </p>
+        {hasStyleProfile && (
+          <p className="mb-3 text-[11px] text-muted-foreground">
+            We&apos;ll use your style quiz selections as the base. Add details here only if you want to guide the scene further.
+          </p>
+        )}
         <Textarea
           placeholder="A serene mountain lake at sunrise with soft mist rising..."
           value={prompt}
@@ -210,7 +220,7 @@ export function PromptPanel() {
       {/* Generate Button */}
       <Button
         onClick={handleGenerate}
-        disabled={!prompt.trim() || isGenerating}
+        disabled={(!hasStyleProfile && !prompt.trim()) || isGenerating}
         className="w-full rounded-full bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
         size="lg"
       >

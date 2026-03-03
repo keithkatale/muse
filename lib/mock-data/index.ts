@@ -153,6 +153,19 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     palette: "cool-ocean",
     prompt: "Cosmic space nebula, deep blues and purples with star clusters",
   },
+  // pick-2 (Art Style) images
+  { id: "gallery-p2-abstract", url: "/images/pick-2/abstract.png", title: "Abstract Expression", style: "abstract", subject: "geometric", palette: "warm-sunset", prompt: "Abstract art with flowing forms and warm tones" },
+  { id: "gallery-p2-realistic", url: "/images/pick-2/realistic.png", title: "Realistic Scene", style: "realistic", subject: "landscapes", palette: "earth-stone", prompt: "Photorealistic scene with natural detail" },
+  { id: "gallery-p2-illustrated", url: "/images/pick-2/illustrated.png", title: "Illustrated Style", style: "illustrated", subject: "florals", palette: "botanical", prompt: "Illustrated botanical or natural motif" },
+  { id: "gallery-p2-minimal", url: "/images/pick-2/minimal.png", title: "Minimal Form", style: "minimal", subject: "geometric", palette: "monochrome", prompt: "Minimalist composition with clean lines" },
+  { id: "gallery-p2-retro", url: "/images/pick-2/retro.png", title: "Retro Aesthetic", style: "retro", subject: "still-life", palette: "vibrant-pop", prompt: "Vintage retro poster style" },
+  // pick-3 (Subject) images
+  { id: "gallery-p3-landscape", url: "/images/pick-3/landscape.png", title: "Landscape", style: "realistic", subject: "landscapes", palette: "earth-stone", prompt: "Natural landscape for wall art" },
+  { id: "gallery-p3-floral", url: "/images/pick-3/floral.png", title: "Floral", style: "illustrated", subject: "florals", palette: "botanical", prompt: "Lush florals and botanicals" },
+  { id: "gallery-p3-geometry", url: "/images/pick-3/geometry.png", title: "Geometric", style: "minimal", subject: "geometric", palette: "monochrome", prompt: "Bold geometric composition" },
+  { id: "gallery-p3-animals", url: "/images/pick-3/animals.png", title: "Animals", style: "realistic", subject: "animals", palette: "warm-sunset", prompt: "Animal portrait or silhouette" },
+  { id: "gallery-p3-architecture", url: "/images/pick-3/architecture.png", title: "Architecture", style: "realistic", subject: "architecture", palette: "earth-stone", prompt: "Architectural forms and spaces" },
+  { id: "gallery-p3-realistic", url: "/images/pick-3/realistic.png", title: "Realistic Art", style: "realistic", subject: "landscapes", palette: "cool-ocean", prompt: "Realistic artwork for the home" },
 ]
 
 // ── Starting Concepts ──
@@ -234,21 +247,21 @@ export const PALETTE_OPTIONS = [
 ]
 
 export const STYLE_OPTIONS = [
-  { id: "abstract" as const, label: "Abstract", image: "/images/gallery/art-1.jpg" },
-  { id: "realistic" as const, label: "Realistic", image: "/images/gallery/art-5.jpg" },
-  { id: "illustrated" as const, label: "Illustrated", image: "/images/gallery/art-4.jpg" },
+  { id: "abstract" as const, label: "Abstract", image: "/images/pick-2/abstract.png" },
+  { id: "realistic" as const, label: "Realistic", image: "/images/pick-2/realistic.png" },
+  { id: "illustrated" as const, label: "Illustrated", image: "/images/pick-2/illustrated.png" },
   { id: "surreal" as const, label: "Surreal", image: "/images/gallery/art-6.jpg" },
-  { id: "minimal" as const, label: "Minimal", image: "/images/gallery/art-3.jpg" },
-  { id: "retro" as const, label: "Retro", image: "/images/gallery/art-8.jpg" },
+  { id: "minimal" as const, label: "Minimal", image: "/images/pick-2/minimal.png" },
+  { id: "retro" as const, label: "Retro", image: "/images/pick-2/retro.png" },
 ]
 
 export const SUBJECT_OPTIONS = [
-  { id: "landscapes" as const, label: "Landscapes", image: "/images/gallery/art-5.jpg" },
-  { id: "florals" as const, label: "Florals", image: "/images/gallery/art-7.jpg" },
-  { id: "geometric" as const, label: "Geometric", image: "/images/gallery/art-3.jpg" },
-  { id: "animals" as const, label: "Animals", image: "/images/gallery/art-4.jpg" },
-  { id: "architecture" as const, label: "Architecture", image: "/images/gallery/art-3.jpg" },
-  { id: "portraits" as const, label: "Portraits", image: "/images/gallery/art-7.jpg" },
+  { id: "landscapes" as const, label: "Landscapes", image: "/images/pick-3/landscape.png" },
+  { id: "florals" as const, label: "Florals", image: "/images/pick-3/floral.png" },
+  { id: "geometric" as const, label: "Geometric", image: "/images/pick-3/geometry.png" },
+  { id: "animals" as const, label: "Animals", image: "/images/pick-3/animals.png" },
+  { id: "architecture" as const, label: "Architecture", image: "/images/pick-3/architecture.png" },
+  { id: "portraits" as const, label: "Portraits", image: "/images/pick-3/geometry.png" },
   { id: "space" as const, label: "Space", image: "/images/gallery/art-8.jpg" },
   { id: "still-life" as const, label: "Still Life", image: "/images/gallery/art-6.jpg" },
 ]
