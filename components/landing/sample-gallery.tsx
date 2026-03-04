@@ -5,8 +5,16 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { GALLERY_ITEMS } from "@/lib/mock-data"
 
+// Landing page: show images from pick-2 and pick-3 only (3 from each)
+const pick2 = GALLERY_ITEMS.filter((item) => item.url.includes("/pick-2/"))
+const pick3 = GALLERY_ITEMS.filter((item) => item.url.includes("/pick-3/"))
+const LANDING_GALLERY_ITEMS = [
+  ...pick2.slice(0, 3),
+  ...pick3.slice(0, 3),
+]
+
 export function SampleGallery() {
-  const items = GALLERY_ITEMS.slice(0, 6)
+  const items = LANDING_GALLERY_ITEMS
 
   return (
     <section className="py-24 sm:py-32 border-t border-border/50 bg-[hsl(40,25%,98%)]">

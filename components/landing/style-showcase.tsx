@@ -3,15 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { GALLERY_ITEMS } from "@/lib/mock-data"
-
-const styles = [
-  "Abstract",
-  "Realistic",
-  "Illustrated",
-  "Surreal",
-  "Minimal",
-]
+import { STYLE_OPTIONS } from "@/lib/mock-data"
 
 export function StyleShowcase() {
   return (
@@ -29,28 +21,32 @@ export function StyleShowcase() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
-          {GALLERY_ITEMS.slice(0, 5).map((item, i) => (
+        {/* Same grid and card layout as Discover Step 2 (pick-2) */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {STYLE_OPTIONS.map((style, i) => (
             <motion.div
-              key={item.id}
+              key={style.id}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.05 }}
-              className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted shadow-sm hover:shadow-md transition-shadow duration-300"
             >
-              <Image
-                src={item.url}
-                alt={styles[i] || ""}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="absolute inset-0 flex items-end justify-center p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="text-xs uppercase tracking-widest text-white drop-shadow-sm">
-                  {styles[i]}
+              <Link
+                href="/discover"
+                className="group relative aspect-[4/5] overflow-hidden rounded-xl border-2 border-border block hover:border-accent/30 transition-all"
+              >
+                <Image
+                  src={style.image}
+                  alt={style.label}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 to-transparent" />
+                <span className="absolute bottom-4 left-4 font-serif text-lg text-background">
+                  {style.label}
                 </span>
-              </div>
+              </Link>
             </motion.div>
           ))}
         </div>
@@ -62,7 +58,7 @@ export function StyleShowcase() {
           className="mt-12 text-center"
         >
           <Link
-            href="/create"
+            href="/discover"
             className="text-sm text-muted-foreground hover:text-accent transition-colors duration-200"
           >
             Create in any style →
