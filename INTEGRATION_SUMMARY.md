@@ -19,7 +19,7 @@ The image generation API route now:
 
 ### 2. Dependencies
 
-**Installed**: `@google/generative-ai` v0.24.1
+**Installed**: `@google/genai` v2.3.0
 
 This is the official Google Generative AI SDK for Node.js/TypeScript.
 
