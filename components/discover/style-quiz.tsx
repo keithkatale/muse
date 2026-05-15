@@ -4,46 +4,78 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useStyleProfile } from "@/lib/contexts"
-import type { StyleProfile, PaletteOption, StyleOption, SubjectOption, MoodOption, RoomOption } from "@/lib/types"
+import type { StyleProfile, PaletteOption, StyleOption, SubjectOption, MoodOption, RoomOption, OrientationOption } from "@/lib/types"
+import { EmailStep } from "./steps/email-step"
 import { PaletteStep } from "./steps/palette-step"
 import { StyleStep } from "./steps/style-step"
 import { SubjectStep } from "./steps/subject-step"
 import { MoodStep } from "./steps/mood-step"
 import { RoomStep } from "./steps/room-step"
-import { QuizResults } from "./quiz-results"
+import { OrientationStep } from "./steps/orientation-step"
 
-const TOTAL_STEPS = 5
+const TOTAL_STEPS = 7
 
 export function StyleQuiz() {
   const router = useRouter()
   const { setProfile } = useStyleProfile()
   const [step, setStep] = useState(0)
-  const [showResults, setShowResults] = useState(false)
 
+  const [email, setEmail] = useState("")
   const [palettes, setPalettes] = useState<PaletteOption[]>([])
   const [styles, setStyles] = useState<StyleOption[]>([])
   const [subjects, setSubjects] = useState<SubjectOption[]>([])
   const [mood, setMood] = useState<MoodOption | null>(null)
   const [room, setRoom] = useState<RoomOption | null>(null)
+  const [orientation, setOrientation] = useState<OrientationOption | null>(null)
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
 
   const canProceed = () => {
     switch (step) {
-      case 0: return palettes.length >= 1
-      case 1: return styles.length >= 1
-      case 2: return subjects.length >= 1
-      case 3: return mood !== null
-      case 4: return room !== null
+      case 0: return email.length > 0 && validateEmail(email)
+      case 1: return palettes.length >= 1
+      case 2: return styles.length >= 1
+      case 3: return subjects.length >= 1
+      case 4: return mood !== null
+      case 5: return room !== null
+      case 6: return orientation !== null
       default: return false
     }
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < TOTAL_STEPS - 1) {
       setStep(step + 1)
     } else {
-      const profile: StyleProfile = { palettes, styles, subjects, mood, room }
+      // Create the complete profile and go directly to generation
+      const profile: StyleProfile = { 
+        email, 
+        palettes, 
+        styles, 
+        subjects, 
+        mood, 
+        room, 
+        orientation 
+      }
       setProfile(profile)
-      setShowResults(true)
+      
+      // Store lead information
+      try {
+        await fetch("/api/store-lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, profile })
+        })
+      } catch (error) {
+        console.error("Failed to store lead:", error)
+        // Continue anyway - don't block the user experience
+      }
+      
+      // Go directly to create page which will auto-generate based on profile
+      router.push("/create")
     }
   }
 
@@ -51,17 +83,15 @@ export function StyleQuiz() {
     if (step > 0) setStep(step - 1)
   }
 
-  if (showResults) {
-    return (
-      <QuizResults
-        profile={{ palettes, styles, subjects, mood, room }}
-        onCreateArt={() => router.push("/create")}
-        onBrowseGallery={() => router.push("/gallery")}
-      />
-    )
-  }
-
-  const stepLabels = ["Color Palette", "Art Style", "Subject Matter", "Mood", "Room"]
+  const stepLabels = [
+    "Email", 
+    "Color Palette", 
+    "Art Style", 
+    "Subject Matter", 
+    "Mood", 
+    "Room", 
+    "Orientation"
+  ]
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-73px)] max-w-5xl flex-col px-6 py-12">
@@ -92,31 +122,40 @@ export function StyleQuiz() {
             transition={{ duration: 0.3 }}
           >
             {step === 0 && (
+              <EmailStep
+                email={email}
+                onEmailChange={setEmail}
+              />
+            )}
+            {step === 1 && (
               <PaletteStep
                 selected={palettes}
                 onSelect={setPalettes}
                 maxSelections={2}
               />
             )}
-            {step === 1 && (
+            {step === 2 && (
               <StyleStep
                 selected={styles}
                 onSelect={setStyles}
                 maxSelections={2}
               />
             )}
-            {step === 2 && (
+            {step === 3 && (
               <SubjectStep
                 selected={subjects}
                 onSelect={setSubjects}
                 maxSelections={3}
               />
             )}
-            {step === 3 && (
+            {step === 4 && (
               <MoodStep selected={mood} onSelect={setMood} />
             )}
-            {step === 4 && (
+            {step === 5 && (
               <RoomStep selected={room} onSelect={setRoom} />
+            )}
+            {step === 6 && (
+              <OrientationStep selected={orientation} onSelect={setOrientation} />
             )}
           </motion.div>
         </AnimatePresence>
@@ -136,7 +175,7 @@ export function StyleQuiz() {
           disabled={!canProceed()}
           className="rounded-full bg-foreground px-8 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          {step === TOTAL_STEPS - 1 ? "See Results" : "Continue"}
+          {step === TOTAL_STEPS - 1 ? "Generate My Art" : "Continue"}
         </button>
       </div>
     </div>

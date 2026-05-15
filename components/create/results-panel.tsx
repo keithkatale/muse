@@ -4,7 +4,7 @@ import { useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { Check, ArrowRight, RotateCcw, ImageIcon } from "lucide-react"
+import { Check, ArrowRight, RotateCcw, ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGeneration } from "@/lib/contexts"
 import { cn } from "@/lib/utils"
@@ -153,13 +153,18 @@ export function ResultsPanel() {
             ? Array.from({ length: 4 }).map((_, i) => (
                 <motion.div
                   key={`skeleton-${i}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="aspect-[3/4] overflow-hidden rounded-lg bg-muted"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: i * 0.1, duration: 0.3 }}
+                  className="aspect-[3/4] overflow-hidden rounded-lg bg-muted/50 border-2 border-dashed border-border/50 flex items-center justify-center"
                 >
-                  <div className="h-full w-full animate-shimmer" />
+                  <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
+                    <div className="text-xs text-muted-foreground font-medium">
+                      Generating...
+                    </div>
+                  </div>
                 </motion.div>
               ))
             : currentImages.map((img, i) => (
@@ -180,7 +185,6 @@ export function ResultsPanel() {
                       : "border-transparent hover:border-border"
                   )}
                 >
-                  <div className="absolute inset-0 animate-shimmer" />
                   <Image
                     src={img.url}
                     alt={`Generated variant ${i + 1}`}

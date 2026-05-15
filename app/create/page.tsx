@@ -1,10 +1,10 @@
-import { GenerationStudio } from "@/components/create/generation-studio"
+import { AutoGenerationStudio } from "@/components/create/auto-generation-studio"
 
 export const metadata = {
   title: "Create Your Art | Muse",
-  description: "Describe what you imagine and watch AI bring it to life. Choose from 4 unique variants and refine until it is perfect.",
+  description: "Your personalized artwork generated from your style preferences.",
 }
 
 export default function CreatePage() {
-  return <GenerationStudio />
+  return <AutoGenerationStudio />
 }

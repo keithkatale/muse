@@ -13,11 +13,13 @@ interface StyleProfileContextType {
 }
 
 const defaultProfile: StyleProfile = {
+  email: "",
   palettes: [],
   styles: [],
   subjects: [],
   mood: null,
   room: null,
+  orientation: null,
 }
 
 const StyleProfileContext = createContext<StyleProfileContextType>({
@@ -35,7 +37,20 @@ export function StyleProfileProvider({ children }: { children: React.ReactNode }
     try {
       const stored = localStorage.getItem("muse-style-profile")
       if (stored) {
-        setProfileState(JSON.parse(stored))
+        const parsedProfile = JSON.parse(stored)
+        // Migrate old profile format to new format
+        const migratedProfile: StyleProfile = {
+          email: parsedProfile.email || "",
+          palettes: parsedProfile.palettes || [],
+          styles: parsedProfile.styles || [],
+          subjects: parsedProfile.subjects || [],
+          mood: parsedProfile.mood || null,
+          room: parsedProfile.room || null,
+          orientation: parsedProfile.orientation || null,
+        }
+        setProfileState(migratedProfile)
+        // Save the migrated profile back to localStorage
+        localStorage.setItem("muse-style-profile", JSON.stringify(migratedProfile))
       }
     } catch {
       // ignore
@@ -53,7 +68,14 @@ export function StyleProfileProvider({ children }: { children: React.ReactNode }
     localStorage.removeItem("muse-style-profile")
   }, [])
 
-  const isQuizComplete = !!profile && profile.palettes.length > 0 && profile.styles.length > 0 && profile.subjects.length > 0 && !!profile.mood && !!profile.room
+  const isQuizComplete = !!profile && 
+    profile.email && profile.email.length > 0 && 
+    profile.palettes && profile.palettes.length > 0 && 
+    profile.styles && profile.styles.length > 0 && 
+    profile.subjects && profile.subjects.length > 0 && 
+    !!profile.mood && 
+    !!profile.room && 
+    !!profile.orientation
 
   if (!loaded) return null
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleGenAI } from "@google/genai"
 import type { StartingConcept, StyleProfile } from "@/lib/types"
 import { STARTING_CONCEPTS } from "@/lib/mock-data"
 
@@ -79,24 +79,52 @@ function buildProfileSummary(profile: StyleProfile): string {
   return parts.join(". ")
 }
 
-async function generateConceptsWithGemini(userPrompt: string): Promise<StartingConcept[]> {
+/**
+ * Build a GoogleGenAI client.
+ * Priority:
+ *   1. Vertex AI / Gemini Enterprise Agent Platform (uses Application Default Credentials)
+ *   2. Gemini Developer API (uses API key)
+ */
+function buildGenAIClient(): GoogleGenAI | null {
+  const project = process.env.GOOGLE_CLOUD_PROJECT
+  const location = process.env.GOOGLE_CLOUD_LOCATION || "us-central1"
+
+  // Prefer Vertex AI when project ID is configured
+  if (project) {
+    console.log(`Using Vertex AI (project: ${project}, location: ${location})`)
+    return new GoogleGenAI({
+      enterprise: true,
+      project,
+      location,
+    })
+  }
+
+  // Fallback to Gemini Developer API key
   const apiKey = process.env.GOOGLE_AI_API_KEY
-  if (!apiKey) return []
+  if (apiKey) {
+    console.log("Using Gemini Developer API (API key)")
+    return new GoogleGenAI({ apiKey })
+  }
+
+  return null
+}
+
+async function generateConceptsWithGenAI(userPrompt: string): Promise<StartingConcept[]> {
+  const ai = buildGenAIClient()
+  if (!ai) return []
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
-
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-      generationConfig: {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: userPrompt,
+      config: {
         temperature: 0.7,
         maxOutputTokens: 2048,
         responseMimeType: "application/json",
       },
     })
 
-    const text = result.response.text()
+    const text = response.text
     if (!text) return []
 
     let parsed: Array<{ id: string; title: string; prompt: string }> = []
@@ -123,8 +151,9 @@ async function generateConceptsWithGemini(userPrompt: string): Promise<StartingC
       subjects: ["landscapes"],
       moods: ["calm"],
     })).filter((c) => c.prompt.length > 0) as StartingConcept[]
-  } catch {
-    console.warn("Generate concepts: Gemini request failed, using fallback concepts.")
+  } catch (error) {
+    console.error("Generate concepts error:", error)
+    console.warn("Generate concepts: GenAI request failed, using fallback concepts.")
     return []
   }
 }
@@ -138,12 +167,17 @@ const fallbackConcepts = () => STARTING_CONCEPTS.slice(0, 6).map((c) => ({
   moods: c.moods,
 }))
 
+/** Check if any GenAI backend (Vertex AI or API key) is configured */
+function isGenAIConfigured(): boolean {
+  return !!(process.env.GOOGLE_CLOUD_PROJECT || process.env.GOOGLE_AI_API_KEY)
+}
+
 export async function GET() {
-  if (!process.env.GOOGLE_AI_API_KEY) {
+  if (!isGenAIConfigured()) {
     return NextResponse.json({ concepts: fallbackConcepts() })
   }
   try {
-    const concepts = await generateConceptsWithGemini(
+    const concepts = await generateConceptsWithGenAI(
       `${SYSTEM_PROMPT}\n\nGenerate 6 new creative concepts now.`
     )
     if (concepts.length === 0) {
@@ -169,7 +203,7 @@ export async function POST(request: Request) {
     // no body or invalid JSON
   }
 
-  if (!process.env.GOOGLE_AI_API_KEY) {
+  if (!isGenAIConfigured()) {
     return NextResponse.json({ concepts: fallbackConcepts() })
   }
 
@@ -178,7 +212,7 @@ export async function POST(request: Request) {
     : `${SYSTEM_PROMPT}\n\nGenerate 6 new creative concepts now.`
 
   try {
-    const concepts = await generateConceptsWithGemini(userPrompt)
+    const concepts = await generateConceptsWithGenAI(userPrompt)
     if (concepts.length === 0) {
       return NextResponse.json({ concepts: fallbackConcepts() })
     }

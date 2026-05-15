@@ -30,13 +30,13 @@ export function SubjectStep({
       <p className="mt-2 text-sm text-muted-foreground">
         Pick up to {maxSelections}
       </p>
-      <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4">
         {SUBJECT_OPTIONS.map((subject) => (
           <button
             key={subject.id}
             onClick={() => toggle(subject.id)}
             className={cn(
-              "group relative aspect-square overflow-hidden rounded-xl border-2 transition-all",
+              "group relative aspect-square overflow-hidden rounded-lg border-2 transition-all",
               selected.includes(subject.id)
                 ? "border-accent ring-2 ring-accent/20"
                 : "border-border hover:border-accent/30"
@@ -46,11 +46,11 @@ export function SubjectStep({
               src={subject.image}
               alt={subject.label}
               fill
-              sizes="(max-width: 640px) 50vw, 25vw"
+              sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 25vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 to-transparent" />
-            <span className="absolute bottom-3 left-3 text-sm font-medium text-background">
+            <span className="absolute bottom-2 left-2 font-serif text-xs sm:text-sm text-background">
               {subject.label}
             </span>
           </button>

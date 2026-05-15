@@ -1,82 +1,88 @@
-// Quick test script to verify Gemini API integration
+// Quick test script to verify Vertex AI / GenAI integration
 // Run with: node test-gemini.js
+//
+// Authentication options:
+//   1. Vertex AI (preferred): Set GOOGLE_CLOUD_PROJECT + GOOGLE_CLOUD_LOCATION
+//      Then run: gcloud auth application-default login
+//   2. Gemini Developer API (fallback): Set GOOGLE_AI_API_KEY
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 
-async function testGeminiAPI() {
+function buildClient() {
+  const project = process.env.GOOGLE_CLOUD_PROJECT;
+  const location = process.env.GOOGLE_CLOUD_LOCATION || "us-central1";
   const apiKey = process.env.GOOGLE_AI_API_KEY;
 
-  if (!apiKey) {
-    console.error("❌ GOOGLE_AI_API_KEY not found in environment variables");
-    console.log("\nTo fix this:");
-    console.log("1. Create a .env.local file in the project root");
-    console.log("2. Add: GOOGLE_AI_API_KEY=your_api_key_here");
-    console.log("3. Get your API key from: https://aistudio.google.com/app/apikey");
+  if (project) {
+    console.log(`✅ Using Vertex AI (project: ${project}, location: ${location})`);
+    return new GoogleGenAI({ enterprise: true, project, location });
+  }
+
+  if (apiKey) {
+    console.log("✅ Using Gemini Developer API (API key)");
+    return new GoogleGenAI({ apiKey });
+  }
+
+  return null;
+}
+
+async function testGenAI() {
+  const ai = buildClient();
+
+  if (!ai) {
+    console.error("❌ No GenAI backend configured");
+    console.log("\nTo fix this, set one of:");
+    console.log("  Option 1 (Vertex AI):");
+    console.log("    export GOOGLE_CLOUD_PROJECT=your-project-id");
+    console.log("    export GOOGLE_CLOUD_LOCATION=us-central1");
+    console.log("    gcloud auth application-default login");
+    console.log("  Option 2 (Developer API):");
+    console.log("    export GOOGLE_AI_API_KEY=your_api_key_here");
     process.exit(1);
   }
 
-  console.log("✅ API key found");
-  console.log("🔄 Testing Gemini API connection...\n");
+  console.log("🔄 Testing GenAI connection with gemini-2.5-flash...\n");
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-image" });
-
-    console.log("📝 Generating test image with prompt: 'A serene mountain landscape at sunset'");
-    
-    const result = await model.generateContent({
-      contents: [{
-        role: "user",
-        parts: [{
-          text: "A serene mountain landscape at sunset with vibrant orange and purple colors"
-        }]
-      }],
-      generationConfig: {
-        responseModalities: ["IMAGE"],
-        imageConfig: {
-          aspectRatio: "16:9"
-        }
-      }
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: "Generate a single creative wall art concept as JSON: {\"title\":\"...\",\"prompt\":\"...\"}",
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 256,
+        responseMimeType: "application/json",
+      },
     });
 
-    const response = result.response;
-    const candidates = response.candidates;
-
-    if (candidates && candidates.length > 0) {
-      const parts = candidates[0].content.parts;
-      
-      for (const part of parts) {
-        if (part.inlineData && part.inlineData.mimeType?.startsWith('image/')) {
-          console.log("\n✅ SUCCESS! Image generated successfully");
-          console.log(`   MIME Type: ${part.inlineData.mimeType}`);
-          console.log(`   Data size: ${part.inlineData.data.length} characters (base64)`);
-          console.log("\n🎉 Your Gemini API integration is working!");
-          console.log("\nNext steps:");
-          console.log("1. Run: npm run dev");
-          console.log("2. Visit: http://localhost:3000");
-          console.log("3. Complete the style quiz at /discover");
-          console.log("4. Generate real AI art at /create");
-          return;
-        }
-      }
+    const text = response.text;
+    if (text) {
+      console.log("✅ SUCCESS! GenAI is working correctly");
+      console.log(`   Response: ${text}`);
+      console.log("\n🎉 Your Vertex AI / GenAI integration is working!");
+      console.log("\nNext steps:");
+      console.log("1. Run: npm run dev");
+      console.log("2. Visit: http://localhost:3000");
+      console.log("3. Complete the style quiz at /discover");
+      console.log("4. Generate real AI art at /create");
+      return;
     }
 
-    console.log("⚠️  No image found in response");
+    console.log("⚠️  No text found in response");
     console.log("Response:", JSON.stringify(response, null, 2));
-    
+
   } catch (error) {
-    console.error("\n❌ Error testing Gemini API:");
+    console.error("\n❌ Error testing GenAI:");
     console.error(error.message);
-    
-    if (error.message.includes("API_KEY_INVALID")) {
-      console.log("\n💡 Your API key appears to be invalid");
-      console.log("   Get a new one from: https://aistudio.google.com/app/apikey");
-    } else if (error.message.includes("429")) {
-      console.log("\n💡 Rate limit exceeded");
-      console.log("   Wait a minute and try again");
-    } else if (error.message.includes("quota")) {
-      console.log("\n💡 Quota exceeded");
-      console.log("   Check your usage at: https://aistudio.google.com/");
+
+    if (error.message?.includes("PERMISSION_DENIED") || error.message?.includes("401")) {
+      console.log("\n💡 Authentication failed. For Vertex AI:");
+      console.log("   1. Enable Vertex AI API: https://console.cloud.google.com/ai/enablement");
+      console.log("   2. Run: gcloud auth application-default login");
+      console.log("   3. Ensure your project ID is correct");
+    } else if (error.message?.includes("429")) {
+      console.log("\n💡 Rate limit exceeded - wait a minute and try again");
+    } else if (error.message?.includes("quota")) {
+      console.log("\n💡 Quota exceeded - check your usage in Google Cloud Console");
     }
   }
 }
@@ -86,7 +92,7 @@ try {
   const fs = require('fs');
   const path = require('path');
   const envPath = path.join(__dirname, '.env.local');
-  
+
   if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
     envContent.split('\n').forEach(line => {
@@ -103,4 +109,4 @@ try {
   // Ignore errors loading .env.local
 }
 
-testGeminiAPI();
+testGenAI();

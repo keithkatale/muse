@@ -1,7 +1,7 @@
 import { HeroSection } from "@/components/landing/hero-section"
 import { HowItWorks } from "@/components/landing/how-it-works"
-import { SampleGallery } from "@/components/landing/sample-gallery"
-import { StyleShowcase } from "@/components/landing/style-showcase"
+import { ImmersiveGallery } from "@/components/landing/immersive-gallery"
+import { ArtShowcaseGallery } from "@/components/landing/art-showcase-gallery"
 import { QualitySection } from "@/components/landing/quality-section"
 import { FinalCTA } from "@/components/landing/final-cta"
 import { FooterSection } from "@/components/landing/footer-section"
@@ -16,9 +16,9 @@ export default function HomePage() {
   return (
     <div>
       <HeroSection />
-      <StyleShowcase />
+      <ArtShowcaseGallery />
       <HowItWorks />
-      <SampleGallery />
+      <ImmersiveGallery />
       <QualitySection />
       <FinalCTA />
       <FooterSection />
