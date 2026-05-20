@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { STYLE_OPTIONS } from "@/lib/mock-data"
 import type { StyleOption } from "@/lib/types"
+import { selectionImage } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 
 export function StyleStep({
@@ -24,7 +25,7 @@ export function StyleStep({
 
   return (
     <div>
-      <h2 className="font-serif text-2xl tracking-tight text-foreground md:text-3xl text-balance">
+      <h2 className="font-heading text-2xl tracking-tight text-foreground md:text-3xl text-balance">
         What art styles do you gravitate toward?
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
@@ -36,10 +37,8 @@ export function StyleStep({
             key={style.id}
             onClick={() => toggle(style.id)}
             className={cn(
-              "group relative aspect-square overflow-hidden rounded-lg border-2 transition-all",
-              selected.includes(style.id)
-                ? "border-accent ring-2 ring-accent/20"
-                : "border-border hover:border-accent/30"
+              "group relative aspect-square overflow-hidden rounded-lg",
+              selectionImage(selected.includes(style.id))
             )}
           >
             <Image

@@ -21,8 +21,14 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border/50">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="font-serif text-xl tracking-tight text-foreground hover:text-muted-foreground transition-colors">
-          Muse
+        <Link href="/" className="inline-flex shrink-0 items-center opacity-90 hover:opacity-100 transition-opacity">
+          <img
+            src="/UI-elements/muse.svg"
+            alt="Muse"
+            width={126}
+            height={32}
+            className="h-8 w-auto"
+          />
         </Link>
 
         {/* Desktop Navigation */}
@@ -33,7 +39,7 @@ export function SiteHeader() {
               href={link.href}
               className={cn(
                 "text-sm tracking-wide transition-colors",
-                pathname === link.href ? "text-foreground" : "text-muted-foreground hover:text-accent"
+                pathname === link.href ? "text-foreground" : "text-muted-foreground hover:text-muse-taupe"
               )}
             >
               {link.label}
@@ -49,7 +55,7 @@ export function SiteHeader() {
           >
             <ShoppingBag className="h-5 w-5" />
             {itemCount > 0 && (
-              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background">
+              <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-muse-brown text-[10px] font-medium text-muse-floral">
                 {itemCount}
               </span>
             )}
@@ -76,7 +82,7 @@ export function SiteHeader() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
                   "text-sm tracking-wide transition-colors",
-                  pathname === link.href ? "text-foreground" : "text-muted-foreground hover:text-accent transition-colors"
+                  pathname === link.href ? "text-foreground" : "text-muted-foreground hover:text-muse-taupe transition-colors"
                 )}
               >
                 {link.label}

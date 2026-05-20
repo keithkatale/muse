@@ -168,7 +168,7 @@ export function AutoGenerationStudio() {
             </Button>
           </div>
           
-          <h1 className="font-serif text-3xl tracking-tight text-foreground md:text-4xl text-balance">
+          <h1 className="font-heading text-3xl tracking-tight text-foreground md:text-4xl text-balance">
             Your Personalized Art
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -178,27 +178,27 @@ export function AutoGenerationStudio() {
           {/* Profile Summary */}
           <div className="mt-6 flex flex-wrap gap-2">
             {profile.palettes.map((palette) => (
-              <span key={palette} className="px-3 py-1 bg-accent/10 text-accent text-xs rounded-full">
+              <span key={palette} className="px-3 py-1 bg-muse-selected text-muse-brown text-xs rounded-full">
                 {palette.replace('-', ' ')}
               </span>
             ))}
             {profile.styles.map((style) => (
-              <span key={style} className="px-3 py-1 bg-accent/10 text-accent text-xs rounded-full">
+              <span key={style} className="px-3 py-1 bg-muse-selected text-muse-brown text-xs rounded-full">
                 {style}
               </span>
             ))}
             {profile.subjects.slice(0, 2).map((subject) => (
-              <span key={subject} className="px-3 py-1 bg-accent/10 text-accent text-xs rounded-full">
+              <span key={subject} className="px-3 py-1 bg-muse-selected text-muse-brown text-xs rounded-full">
                 {subject}
               </span>
             ))}
             {profile.mood && (
-              <span className="px-3 py-1 bg-accent/10 text-accent text-xs rounded-full">
+              <span className="px-3 py-1 bg-muse-selected text-muse-brown text-xs rounded-full">
                 {profile.mood} mood
               </span>
             )}
             {profile.orientation && (
-              <span className="px-3 py-1 bg-accent/10 text-accent text-xs rounded-full">
+              <span className="px-3 py-1 bg-muse-selected text-muse-brown text-xs rounded-full">
                 {profile.orientation}
               </span>
             )}
@@ -219,21 +219,10 @@ export function AutoGenerationStudio() {
             </div>
             <Button
               onClick={generateFromProfile}
-              disabled={isGenerating}
-              variant="outline"
+              loading={isGenerating}
               size="sm"
             >
-              {isGenerating ? (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Generate New Variations
-                </>
-              )}
+              {isGenerating ? 'Generating' : 'Generate New Variations'}
             </Button>
           </motion.div>
 

@@ -16,7 +16,7 @@ export function GenerationStudio() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="font-serif text-3xl tracking-tight text-foreground md:text-4xl text-balance">
+          <h1 className="font-heading text-3xl tracking-tight text-foreground md:text-4xl text-balance">
             AI Art Generation Studio
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">

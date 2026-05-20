@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
-import { DM_Sans, Crimson_Pro } from "next/font/google"
+import { DM_Sans } from "next/font/google"
+import localFont from "next/font/local"
 import { Toaster } from "sonner"
 
 import "./globals.css"
@@ -11,10 +12,44 @@ const dmSans = DM_Sans({
   variable: "--font-sans",
 })
 
-const crimsonPro = Crimson_Pro({
-  subsets: ["latin"],
+const appleGaramond = localFont({
+  src: [
+    {
+      path: "../public/Font/AppleGaramond-Light.ttf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/Font/AppleGaramond.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/Font/AppleGaramond-Italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "../public/Font/AppleGaramond-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/Font/AppleGaramond-BoldItalic.ttf",
+      weight: "700",
+      style: "italic",
+    },
+  ],
   variable: "--font-serif",
-  weight: ["400", "600", "700"],
+  display: "swap",
+})
+
+const appleGaramondHeading = localFont({
+  src: "../public/Font/AppleGaramond-LightItalic.ttf",
+  weight: "300",
+  style: "italic",
+  variable: "--font-heading",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
@@ -29,8 +64,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${crimsonPro.variable}`}>
-      <body className="font-sans antialiased">
+    <html lang="en" className={`${dmSans.variable} ${appleGaramond.variable} ${appleGaramondHeading.variable}`}>
+      <body className="font-serif antialiased">
         <Providers>
           <SiteHeader />
           <main>{children}</main>

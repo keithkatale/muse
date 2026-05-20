@@ -330,8 +330,8 @@ export function ArtPreview({
               className={cn(
                 "relative shrink-0 w-16 h-12 sm:w-20 sm:h-14 rounded-md overflow-hidden border-2 transition-all",
                 selectedRoom === room.id
-                  ? "border-accent ring-2 ring-accent/20"
-                  : "border-border hover:border-accent/50"
+                  ? "border-muse-peach ring-2 ring-muse-peach/25"
+                  : "border-border hover:border-muse-peach/50"
               )}
             >
               <Image
@@ -342,7 +342,7 @@ export function ArtPreview({
                 className="object-cover"
               />
               {selectedRoom === room.id && (
-                <div className="absolute inset-0 bg-accent/20" />
+                <div className="absolute inset-0 bg-muse-selected/30" />
               )}
             </button>
           ))}

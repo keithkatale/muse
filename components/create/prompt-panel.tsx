@@ -2,13 +2,13 @@
 
 import { useCallback } from "react"
 import { motion } from "framer-motion"
-import { Sparkles, Wand2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useGeneration, useStyleProfile } from "@/lib/contexts"
 import { useRotatingConcepts } from "@/lib/hooks/use-rotating-concepts"
 import { ASPECT_RATIOS } from "@/lib/mock-data"
 import type { EnhancePromptResponse, GenerateResponse } from "@/lib/types"
+import { selectionCard } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 
 const ASPECT_OPTIONS = Object.entries(ASPECT_RATIOS).map(([key, val]) => ({
@@ -139,8 +139,8 @@ export function PromptPanel() {
               key={concept.id}
               onClick={() => setPrompt(concept.prompt)}
               className={cn(
-                "rounded-lg border border-border bg-card p-3 text-left text-xs leading-relaxed text-foreground transition-all hover:border-accent/50 hover:bg-card/80",
-                prompt === concept.prompt && "border-accent bg-accent/5"
+                "rounded-lg p-3 text-left text-xs leading-relaxed",
+                selectionCard(prompt === concept.prompt, "rounded-lg")
               )}
             >
               {concept.title}
@@ -176,10 +176,8 @@ export function PromptPanel() {
               key={opt.id}
               onClick={() => setAspectRatio(opt.id)}
               className={cn(
-                "flex-1 rounded-lg border border-border py-2 text-xs transition-all",
-                aspectRatio === opt.id
-                  ? "border-accent bg-accent/10 text-foreground font-medium"
-                  : "bg-card text-muted-foreground hover:border-accent/30"
+                "flex-1 rounded-lg py-2 text-xs",
+                selectionCard(aspectRatio === opt.id, "rounded-lg")
               )}
             >
               {opt.label}
@@ -195,10 +193,8 @@ export function PromptPanel() {
           <button
             onClick={() => setQuality("standard")}
             className={cn(
-              "flex-1 rounded-lg border border-border py-2.5 text-xs transition-all",
-              quality === "standard"
-                ? "border-accent bg-accent/10 text-foreground font-medium"
-                : "bg-card text-muted-foreground hover:border-accent/30"
+              "flex-1 rounded-lg py-2.5 text-xs",
+              selectionCard(quality === "standard", "rounded-lg")
             )}
           >
             Standard
@@ -206,10 +202,8 @@ export function PromptPanel() {
           <button
             onClick={() => setQuality("premium")}
             className={cn(
-              "flex-1 rounded-lg border border-border py-2.5 text-xs transition-all",
-              quality === "premium"
-                ? "border-accent bg-accent/10 text-foreground font-medium"
-                : "bg-card text-muted-foreground hover:border-accent/30"
+              "flex-1 rounded-lg py-2.5 text-xs",
+              selectionCard(quality === "premium", "rounded-lg")
             )}
           >
             Premium
@@ -220,21 +214,12 @@ export function PromptPanel() {
       {/* Generate Button */}
       <Button
         onClick={handleGenerate}
-        disabled={(!hasStyleProfile && !prompt.trim()) || isGenerating}
-        className="w-full rounded-full bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
+        disabled={!hasStyleProfile && !prompt.trim()}
+        loading={isGenerating}
+        className="w-full"
         size="lg"
       >
-        {isGenerating ? (
-          <>
-            <Wand2 className="mr-2 h-4 w-4 animate-spin" />
-            Generating...
-          </>
-        ) : (
-          <>
-            <Sparkles className="mr-2 h-4 w-4" />
-            Generate Art
-          </>
-        )}
+        {isGenerating ? 'Generating' : 'Generate Art'}
       </Button>
     </motion.div>
   )

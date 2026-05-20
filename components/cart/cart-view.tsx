@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import { Trash2, ArrowRight, ShoppingBag, ArrowLeft, Loader2 } from "lucide-react"
+import { Trash2, ArrowRight, ShoppingBag, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/contexts"
 import { formatPrice } from "@/lib/mock-data"
@@ -56,27 +56,20 @@ export function CartView() {
       <div className="min-h-[calc(100vh-73px)]">
         <div className="mx-auto flex max-w-2xl flex-col items-center justify-center px-6 py-32 text-center">
           <ShoppingBag className="mb-6 h-16 w-16 text-muted-foreground/30" />
-          <h1 className="font-serif text-3xl tracking-tight text-foreground">
+          <h1 className="font-heading text-3xl tracking-tight text-foreground">
             Your cart is empty
           </h1>
           <p className="mt-3 text-muted-foreground">
             Create custom art and configure your perfect print to get started.
           </p>
           <div className="mt-8 flex gap-4">
-            <Button
-              asChild
-              className="rounded-full bg-foreground text-background hover:bg-foreground/90"
-            >
+            <Button asChild>
               <Link href="/create">
-                Start Creating
+                Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="rounded-full border-foreground/20 text-foreground hover:bg-foreground/5"
-            >
+            <Button asChild variant="outline">
               <Link href="/gallery">Browse Gallery</Link>
             </Button>
           </div>
@@ -96,7 +89,7 @@ export function CartView() {
           <p className="mb-2 text-sm uppercase tracking-[0.2em] text-muted-foreground">
             Shopping Cart
           </p>
-          <h1 className="font-serif text-3xl tracking-tight text-foreground md:text-4xl">
+          <h1 className="font-heading text-3xl tracking-tight text-foreground md:text-4xl">
             {itemCount} {itemCount === 1 ? "item" : "items"} in your cart
           </h1>
         </motion.div>
@@ -126,14 +119,14 @@ export function CartView() {
                   </div>
                   <div className="flex flex-1 flex-col justify-between">
                     <div>
-                      <h3 className="font-serif text-base text-foreground">{item.title}</h3>
+                      <h3 className="font-heading text-base text-foreground">{item.title}</h3>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {item.size} &middot; {item.medium} &middot; {item.frame}
                         {item.mat !== "No Mat" ? ` \u00b7 ${item.mat}` : ""}
                       </p>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="font-serif text-lg text-foreground">{formatPrice(item.price)}</span>
+                      <span className="font-heading text-lg text-foreground">{formatPrice(item.price)}</span>
                       <button
                         onClick={() => removeItem(item.id)}
                         className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-destructive"
@@ -170,7 +163,7 @@ export function CartView() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="h-fit rounded-lg border border-border bg-card p-6"
           >
-            <h2 className="font-serif text-lg text-foreground">Order Summary</h2>
+            <h2 className="font-heading text-lg text-foreground">Order Summary</h2>
 
             <div className="mt-4 flex flex-col gap-2 border-b border-border pb-4">
               <div className="flex justify-between text-sm">
@@ -185,28 +178,19 @@ export function CartView() {
 
             <div className="mt-4 flex justify-between">
               <span className="text-sm font-medium text-foreground">Total</span>
-              <span className="font-serif text-2xl tracking-tight text-foreground">
+              <span className="font-heading text-2xl tracking-tight text-foreground">
                 {formatPrice(totalPrice)}
               </span>
             </div>
 
             <Button
               onClick={handleCheckout}
-              disabled={isCheckingOut}
+              loading={isCheckingOut}
               size="lg"
-              className="mt-6 w-full rounded-full bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
+              className="mt-6 w-full"
             >
-              {isCheckingOut ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating checkout...
-                </>
-              ) : (
-                <>
-                  Proceed to Checkout
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
+              Proceed to Checkout
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
 
             <p className="mt-3 text-center text-[11px] text-muted-foreground">

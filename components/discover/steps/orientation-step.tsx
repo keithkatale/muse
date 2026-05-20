@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion"
 import { Monitor, Smartphone } from "lucide-react"
+import { selectionCard } from "@/lib/brand"
+import { cn } from "@/lib/utils"
 
 export type OrientationOption = "portrait" | "landscape"
 
@@ -38,7 +40,7 @@ export function OrientationStep({ selected, onSelect }: OrientationStepProps) {
         transition={{ duration: 0.5 }}
         className="text-center mb-12"
       >
-        <h2 className="font-serif text-3xl sm:text-4xl text-foreground mb-4">
+        <h2 className="font-heading text-3xl sm:text-4xl text-foreground mb-4">
           Choose Your Orientation
         </h2>
         <p className="text-muted-foreground text-lg">
@@ -58,28 +60,27 @@ export function OrientationStep({ selected, onSelect }: OrientationStepProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               onClick={() => onSelect(orientation.id)}
-              className={`group relative overflow-hidden rounded-2xl border-2 p-8 text-left transition-all duration-300 hover:shadow-lg ${
-                isSelected
-                  ? "border-accent bg-accent/5 shadow-lg"
-                  : "border-border bg-background hover:border-accent/50"
-              }`}
+              className={cn(
+                "group relative overflow-hidden rounded-2xl p-8 text-left hover:shadow-lg",
+                selectionCard(isSelected, "rounded-2xl")
+              )}
             >
               {/* Visual Preview */}
               <div className="mb-6 flex justify-center">
                 <div className={`relative rounded-lg border-2 bg-muted/30 ${
                   orientation.id === "portrait" ? "h-32 w-24" : "h-24 w-32"
-                } ${isSelected ? "border-accent" : "border-border"}`}>
-                  <div className="absolute inset-2 rounded bg-gradient-to-br from-accent/20 to-accent/10" />
+                } ${isSelected ? "border-muse-peach" : "border-border"}`}>
+                  <div className="absolute inset-2 rounded bg-gradient-to-br from-muse-peach/30 to-muse-selected/50" />
                   <Icon className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${
-                    isSelected ? "text-accent" : "text-muted-foreground"
+                    isSelected ? "text-muse-brown" : "text-muted-foreground"
                   }`} size={20} />
                 </div>
               </div>
 
               {/* Content */}
               <div className="space-y-3">
-                <h3 className={`font-serif text-2xl transition-colors ${
-                  isSelected ? "text-accent" : "text-foreground group-hover:text-accent/80"
+                <h3 className={`font-heading text-2xl transition-colors ${
+                  isSelected ? "text-muse-brown" : "text-foreground group-hover:text-muse-taupe"
                 }`}>
                   {orientation.label}
                 </h3>
@@ -104,7 +105,7 @@ export function OrientationStep({ selected, onSelect }: OrientationStepProps) {
               {isSelected && (
                 <motion.div
                   layoutId="orientation-selection"
-                  className="absolute top-4 right-4 h-6 w-6 rounded-full bg-accent"
+                  className="absolute top-4 right-4 h-6 w-6 rounded-full bg-muse-peach"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.2 }}
@@ -117,7 +118,7 @@ export function OrientationStep({ selected, onSelect }: OrientationStepProps) {
 
               {/* Hover Effect */}
               <div className={`absolute inset-0 rounded-2xl transition-opacity ${
-                isSelected ? "bg-accent/5" : "bg-accent/0 group-hover:bg-accent/5"
+                isSelected ? "bg-muse-selected/30" : "bg-transparent group-hover:bg-muse-selected/20"
               }`} />
             </motion.button>
           )

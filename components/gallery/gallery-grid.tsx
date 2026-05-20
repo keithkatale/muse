@@ -57,7 +57,7 @@ export function GalleryGrid() {
           <p className="mb-2 text-sm uppercase tracking-[0.2em] text-muted-foreground">
             Inspiration
           </p>
-          <h1 className="font-serif text-3xl tracking-tight text-foreground md:text-4xl text-balance">
+          <h1 className="font-heading text-3xl tracking-tight text-foreground md:text-4xl text-balance">
             Browse the gallery
           </h1>
           <p className="mt-3 max-w-xl text-muted-foreground">
@@ -145,7 +145,7 @@ export function GalleryGrid() {
 
         {filtered.length === 0 && (
           <div className="flex flex-col items-center py-24 text-center">
-            <p className="font-serif text-xl text-foreground">No matching artwork</p>
+            <p className="font-heading text-xl text-foreground">No matching artwork</p>
             <p className="mt-2 text-sm text-muted-foreground">Try adjusting your filters</p>
           </div>
         )}

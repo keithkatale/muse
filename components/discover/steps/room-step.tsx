@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { ROOM_OPTIONS } from "@/lib/mock-data"
 import type { RoomOption } from "@/lib/types"
+import { selectionImage } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 
 export function RoomStep({
@@ -14,7 +15,7 @@ export function RoomStep({
 }) {
   return (
     <div>
-      <h2 className="font-serif text-2xl tracking-tight text-foreground md:text-3xl text-balance">
+      <h2 className="font-heading text-2xl tracking-tight text-foreground md:text-3xl text-balance">
         Where will this art live?
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
@@ -26,10 +27,8 @@ export function RoomStep({
             key={room.id}
             onClick={() => onSelect(room.id)}
             className={cn(
-              "group relative aspect-[4/3] overflow-hidden rounded-xl border-2 transition-all",
-              selected === room.id
-                ? "border-accent ring-2 ring-accent/20"
-                : "border-border hover:border-accent/30"
+              "group relative aspect-[4/3] overflow-hidden rounded-xl",
+              selectionImage(selected === room.id)
             )}
           >
             <Image

@@ -31,7 +31,7 @@ export function QuizResults({
           <Palette className="h-7 w-7 text-foreground" />
         </div>
 
-        <h1 className="font-serif text-3xl tracking-tight text-foreground md:text-4xl text-balance">
+        <h1 className="font-heading text-3xl tracking-tight text-foreground md:text-4xl text-balance">
           Your style profile is ready
         </h1>
 
@@ -74,20 +74,11 @@ export function QuizResults({
         </p>
 
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-          <Button
-            onClick={onCreateArt}
-            size="lg"
-            className="rounded-full bg-foreground px-8 text-background hover:bg-foreground/90"
-          >
-            Create Your Art
+          <Button onClick={onCreateArt} size="lg">
+            Get Started
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
-          <Button
-            onClick={onBrowseGallery}
-            variant="outline"
-            size="lg"
-            className="rounded-full border-foreground/20 px-8 text-foreground hover:bg-foreground/5"
-          >
+          <Button onClick={onBrowseGallery} variant="outline" size="lg">
             Browse Gallery
           </Button>
         </div>

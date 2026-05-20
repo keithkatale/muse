@@ -37,7 +37,7 @@ export function EmailStep({ email, onEmailChange }: EmailStepProps) {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-accent/10">
             <Mail className="h-8 w-8 text-accent" />
           </div>
-          <h2 className="font-serif text-3xl sm:text-4xl text-foreground mb-4">
+          <h2 className="font-heading text-3xl sm:text-4xl text-foreground mb-4">
             Let's Create Your Art
           </h2>
           <p className="text-muted-foreground text-lg leading-relaxed">

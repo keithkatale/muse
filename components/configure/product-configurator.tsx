@@ -12,6 +12,7 @@ import {
   calculatePrice, formatPrice, validateResolution,
 } from "@/lib/mock-data"
 import { getShopifyVariantId } from "@/lib/product-mapping"
+import { selectionCard } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 import { ArtPreview } from "./art-preview"
 import { GALLERY_ITEMS } from "@/lib/mock-data"
@@ -71,14 +72,11 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
   if (!image) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-6">
-        <p className="font-serif text-2xl text-foreground">Image not found</p>
+        <p className="font-heading text-2xl text-foreground">Image not found</p>
         <p className="mt-2 text-sm text-muted-foreground">
           Generate an image first or browse the gallery
         </p>
-        <Button
-          onClick={() => router.push("/create")}
-          className="mt-6 rounded-full bg-foreground text-background hover:bg-foreground/90"
-        >
+        <Button onClick={() => router.push("/create")} className="mt-6">
           Go to Studio
         </Button>
       </div>
@@ -96,7 +94,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
           <p className="mb-2 text-sm uppercase tracking-[0.2em] text-muted-foreground">
             Configure Your Print
           </p>
-          <h1 className="font-serif text-3xl tracking-tight text-foreground md:text-4xl text-balance">
+          <h1 className="font-heading text-3xl tracking-tight text-foreground md:text-4xl text-balance">
             Make it yours
           </h1>
         </motion.div>
@@ -133,10 +131,8 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                     key={s.id}
                     onClick={() => setSize(s.id)}
                     className={cn(
-                      "flex flex-col items-center rounded-lg border border-border py-2.5 sm:py-3 text-xs transition-all",
-                      size === s.id
-                        ? "border-accent bg-accent/10 text-foreground"
-                        : "bg-card text-muted-foreground hover:border-accent/30"
+                      "flex flex-col items-center rounded-lg py-2.5 sm:py-3 text-xs",
+                      selectionCard(size === s.id, "rounded-lg")
                     )}
                   >
                     <span className="font-medium">{s.label}</span>
@@ -160,10 +156,8 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                     key={m.id}
                     onClick={() => setMedium(m.id)}
                     className={cn(
-                      "flex items-center justify-between rounded-lg border border-border px-4 py-3 text-left transition-all",
-                      medium === m.id
-                        ? "border-accent bg-accent/10"
-                        : "bg-card hover:border-accent/30"
+                      "flex items-center justify-between rounded-lg px-4 py-3 text-left",
+                      selectionCard(medium === m.id, "rounded-lg")
                     )}
                   >
                     <div>
@@ -175,7 +169,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                         <span className="text-xs text-muted-foreground">+{formatPrice(m.upcharge)}</span>
                       )}
                       {medium === m.id && (
-                        <Check className="h-4 w-4 text-accent" />
+                        <Check className="h-4 w-4 text-muse-brown" />
                       )}
                     </div>
                   </button>
@@ -195,10 +189,8 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                       if (f.id === "none") setMat("none")
                     }}
                     className={cn(
-                      "flex shrink-0 flex-col items-center gap-2 rounded-lg border border-border px-3 sm:px-4 py-2.5 sm:py-3 transition-all",
-                      frame === f.id
-                        ? "border-accent bg-accent/10"
-                        : "bg-card hover:border-accent/30"
+                      "flex shrink-0 flex-col items-center gap-2 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3",
+                      selectionCard(frame === f.id, "rounded-lg")
                     )}
                   >
                     <div
@@ -228,10 +220,8 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                       key={m.id}
                       onClick={() => setMat(m.id)}
                       className={cn(
-                        "flex-1 rounded-lg border border-border py-2.5 text-xs transition-all",
-                        mat === m.id
-                          ? "border-accent bg-accent/10 text-foreground font-medium"
-                          : "bg-card text-muted-foreground hover:border-accent/30"
+                        "flex-1 rounded-lg py-2.5 text-xs",
+                        selectionCard(mat === m.id, "rounded-lg")
                       )}
                     >
                       {m.label}
@@ -245,7 +235,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
             <div className="rounded-lg border border-border bg-card p-5">
               <div className="flex items-baseline justify-between">
                 <span className="text-sm text-muted-foreground">Total</span>
-                <span className="font-serif text-3xl tracking-tight text-foreground">
+                <span className="font-heading text-3xl tracking-tight text-foreground">
                   {formatPrice(totalPrice)}
                 </span>
               </div>
@@ -265,7 +255,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
             <Button
               onClick={handleAddToCart}
               size="lg"
-              className="w-full rounded-full bg-foreground text-background hover:bg-foreground/90"
+              className="w-full"
             >
               <ShoppingBag className="mr-2 h-4 w-4" />
               Add to Cart &mdash; {formatPrice(totalPrice)}

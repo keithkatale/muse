@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Check, ArrowRight, RotateCcw, ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGeneration } from "@/lib/contexts"
+import { selectionImage, selectionPill } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 import type { GenerateResponse } from "@/lib/types"
 
@@ -136,7 +137,7 @@ export function ResultsPanel() {
         className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/50 py-24"
       >
         <ImageIcon className="mb-4 h-12 w-12 text-muted-foreground/40" />
-        <p className="font-serif text-xl text-foreground">Your art will appear here</p>
+        <p className="font-heading text-xl text-foreground">Your art will appear here</p>
         <p className="mt-2 text-sm text-muted-foreground">
           Describe what you imagine or pick a starting concept
         </p>
@@ -179,10 +180,8 @@ export function ResultsPanel() {
                     )
                   }
                   className={cn(
-                    "group relative aspect-[3/4] overflow-hidden rounded-lg border-2 transition-all",
-                    selectedImage?.id === img.id
-                      ? "border-accent ring-2 ring-accent/20"
-                      : "border-transparent hover:border-border"
+                    "group relative aspect-[3/4] overflow-hidden rounded-lg",
+                    selectionImage(selectedImage?.id === img.id)
                   )}
                 >
                   <Image
@@ -197,9 +196,9 @@ export function ResultsPanel() {
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent"
+                      className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-muse-peach"
                     >
-                      <Check className="h-3.5 w-3.5 text-accent-foreground" />
+                      <Check className="h-3.5 w-3.5 text-muse-brown" />
                     </motion.div>
                   )}
                 </motion.button>
@@ -224,12 +223,7 @@ export function ResultsPanel() {
                 <button
                   key={tag.id}
                   onClick={() => handleRefine(tag.id)}
-                  className={cn(
-                    "rounded-full border border-border px-3 py-1.5 text-xs transition-all hover:border-accent/50 hover:bg-accent/5",
-                    activeModifiers.includes(tag.id)
-                      ? "border-accent bg-accent/10 text-foreground font-medium"
-                      : "bg-card text-muted-foreground"
-                  )}
+                  className={selectionPill(activeModifiers.includes(tag.id))}
                 >
                   {tag.label}
                 </button>
@@ -245,7 +239,6 @@ export function ResultsPanel() {
               }}
               variant="outline"
               size="sm"
-              className="rounded-full border-border text-foreground hover:bg-card"
             >
               <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
               <span className="hidden sm:inline">Try Different Composition</span>
@@ -256,7 +249,7 @@ export function ResultsPanel() {
               onClick={handleContinue}
               disabled={!selectedImage}
               size="sm"
-              className="sm:ml-auto rounded-full bg-foreground text-background hover:bg-foreground/90 disabled:opacity-50"
+              className="sm:ml-auto"
             >
               <span className="hidden sm:inline">Continue to Print Options</span>
               <span className="sm:hidden">Continue</span>

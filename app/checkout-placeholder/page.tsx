@@ -18,7 +18,7 @@ export default function CheckoutPlaceholderPage() {
           <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
             <CreditCard className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h1 className="font-serif text-3xl tracking-tight text-foreground">
+          <h1 className="font-heading text-3xl tracking-tight text-foreground">
             Shopify Checkout
           </h1>
           <p className="mt-4 max-w-md leading-relaxed text-muted-foreground">
@@ -30,11 +30,7 @@ export default function CheckoutPlaceholderPage() {
             <Lock className="h-3.5 w-3.5" />
             Payments secured by Shopify
           </div>
-          <Button
-            asChild
-            variant="outline"
-            className="mt-8 rounded-full border-foreground/20 text-foreground hover:bg-foreground/5"
-          >
+          <Button asChild variant="outline" className="mt-8">
             <Link href="/cart">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Cart

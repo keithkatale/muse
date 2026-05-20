@@ -2,8 +2,7 @@ import { HeroSection } from "@/components/landing/hero-section"
 import { HowItWorks } from "@/components/landing/how-it-works"
 import { ImmersiveGallery } from "@/components/landing/immersive-gallery"
 import { ArtShowcaseGallery } from "@/components/landing/art-showcase-gallery"
-import { QualitySection } from "@/components/landing/quality-section"
-import { FinalCTA } from "@/components/landing/final-cta"
+import { CtaSection } from "@/components/landing/cta-section"
 import { FooterSection } from "@/components/landing/footer-section"
 
 export const metadata = {
@@ -19,8 +18,7 @@ export default function HomePage() {
       <ArtShowcaseGallery />
       <HowItWorks />
       <ImmersiveGallery />
-      <QualitySection />
-      <FinalCTA />
+      <CtaSection />
       <FooterSection />
     </div>
   )

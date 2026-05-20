@@ -12,6 +12,7 @@ import { SubjectStep } from "./steps/subject-step"
 import { MoodStep } from "./steps/mood-step"
 import { RoomStep } from "./steps/room-step"
 import { OrientationStep } from "./steps/orientation-step"
+import { Button } from "@/components/ui/button"
 
 const TOTAL_STEPS = 7
 
@@ -104,7 +105,7 @@ export function StyleQuiz() {
       </div>
       <div className="mb-10 h-1 w-full overflow-hidden rounded-full bg-muted">
         <motion.div
-          className="h-full bg-foreground"
+          className="h-full bg-muse-peach"
           initial={false}
           animate={{ width: `${((step + 1) / TOTAL_STEPS) * 100}%` }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
@@ -170,13 +171,9 @@ export function StyleQuiz() {
         >
           Back
         </button>
-        <button
-          onClick={handleNext}
-          disabled={!canProceed()}
-          className="rounded-full bg-foreground px-8 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
-        >
+        <Button onClick={handleNext} disabled={!canProceed()}>
           {step === TOTAL_STEPS - 1 ? "Generate My Art" : "Continue"}
-        </button>
+        </Button>
       </div>
     </div>
   )

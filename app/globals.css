@@ -7,6 +7,20 @@
     text-wrap: balance;
   }
 
+  .font-brand {
+    letter-spacing: -0.05em;
+  }
+
+  .font-heading {
+    font-family: var(--font-heading), ui-serif, Georgia, serif;
+    font-style: italic;
+    letter-spacing: -0.05em;
+  }
+
+  .muse-cta-section {
+    background-color: #564738;
+  }
+
   @keyframes shimmer {
     0% {
       background-position: -200% 0;
@@ -30,31 +44,32 @@
 
 @layer base {
   :root {
-    --background: 40 30% 97%;
-    --foreground: 30 10% 12%;
-    --card: 40 25% 95%;
-    --card-foreground: 30 10% 12%;
-    --popover: 40 30% 97%;
-    --popover-foreground: 30 10% 12%;
-    --primary: 30 10% 12%;
-    --primary-foreground: 40 30% 97%;
-    --secondary: 35 15% 90%;
-    --secondary-foreground: 30 10% 20%;
-    --muted: 35 12% 92%;
-    --muted-foreground: 30 5% 45%;
-    --accent: 25 60% 52%;
-    --accent-foreground: 40 30% 97%;
+    /* Muse brand: Floral White, Grayish Brown, Vibrant Peach, Taupe */
+    --background: 32 86% 97%;
+    --foreground: 30 21% 28%;
+    --card: 32 50% 95%;
+    --card-foreground: 30 21% 28%;
+    --popover: 32 86% 97%;
+    --popover-foreground: 30 21% 28%;
+    --primary: 30 21% 28%;
+    --primary-foreground: 32 86% 97%;
+    --secondary: 30 23% 47%;
+    --secondary-foreground: 32 86% 97%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 30 15% 45%;
+    --accent: 33 83% 80%;
+    --accent-foreground: 30 21% 28%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 35 15% 87%;
-    --input: 35 15% 87%;
-    --ring: 25 60% 52%;
-    --chart-1: 25 60% 52%;
-    --chart-2: 35 45% 62%;
-    --chart-3: 30 10% 30%;
-    --chart-4: 40 30% 72%;
-    --chart-5: 15 50% 55%;
-    --radius: 0.5rem;
+    --border: 33 30% 88%;
+    --input: 33 30% 88%;
+    --ring: 33 83% 80%;
+    --chart-1: 33 83% 80%;
+    --chart-2: 30 23% 47%;
+    --chart-3: 30 21% 28%;
+    --chart-4: 32 86% 97%;
+    --chart-5: 33 60% 65%;
+    --radius: 0.75rem;
   }
 }
 
@@ -63,6 +78,13 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-brand;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading), ui-serif, Georgia, serif;
+    font-style: italic;
+    letter-spacing: -0.05em;
   }
 }

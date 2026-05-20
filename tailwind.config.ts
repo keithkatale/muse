@@ -11,6 +11,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        muse: {
+          peach: '#F6CDA1',
+          brown: '#564738',
+          floral: '#FEF8F2',
+          taupe: '#947A5D',
+          selected: '#FDE2C4',
+          unselected: '#F2F2F2',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -65,6 +73,7 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-sans)'],
         serif: ['var(--font-serif)'],
+        heading: ['var(--font-heading)'],
       },
       borderRadius: {
         lg: 'var(--radius)',
