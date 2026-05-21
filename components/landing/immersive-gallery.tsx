@@ -16,13 +16,9 @@ export function ImmersiveGallery() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="w-12 h-px bg-muse-peach/60" />
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              Gallery
-            </p>
-            <div className="w-12 h-px bg-muse-peach/60" />
-          </div>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4">
+            Gallery
+          </p>
           <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl text-foreground mb-4">
             Curated Art Collection
           </h2>

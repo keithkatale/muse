@@ -117,16 +117,16 @@ export function ArtPreview({
   return (
     <div className="flex flex-col gap-3 sm:gap-4">
       {/* Preview Mode Tabs */}
-      <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
+      <div className="flex gap-1 rounded-lg border border-[#E8DDD4] bg-muse-floral p-1">
         {PREVIEW_TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setMode(tab.id)}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-md py-2 text-[10px] sm:text-xs transition-all",
+              "flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-md border-2 py-2 text-[10px] sm:text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-muse-peach/40",
               mode === tab.id
-                ? "bg-background text-foreground font-medium shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                ? "border-muse-peach bg-muse-selected text-[#564738] font-medium shadow-sm"
+                : "border-[#E8DDD4] bg-muse-floral text-[#947A5D] hover:border-muse-peach hover:bg-muse-selected/50 hover:text-[#564738]"
             )}
           >
             <tab.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
@@ -136,7 +136,7 @@ export function ArtPreview({
       </div>
 
       {/* Preview Area */}
-      <div className="relative overflow-hidden rounded-lg bg-muted aspect-[4/3]">
+      <div className="relative overflow-hidden rounded-lg bg-[#F5EDE6] aspect-[4/3]">
         <AnimatePresence mode="wait">
           {mode === "art" && (
             <motion.div
@@ -144,7 +144,7 @@ export function ArtPreview({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex h-full items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 p-4 sm:p-8"
+              className="flex h-full items-center justify-center bg-gradient-to-br from-[#FAF6F2] to-[#F0E6DD] p-4 sm:p-8"
             >
               <motion.div
                 animate={{ scale: sizeScale }}
@@ -263,14 +263,14 @@ export function ArtPreview({
               </div>
 
               {/* Room Navigation */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-background/90 backdrop-blur-sm rounded-full px-3 py-2 shadow-lg">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-muse-floral/95 backdrop-blur-sm rounded-full border border-[#E8DDD4] px-3 py-2 shadow-lg text-[#564738]">
                 <button
                   onClick={() => {
                     const currentIndex = ROOM_OPTIONS.findIndex(r => r.id === selectedRoom)
                     const prevIndex = (currentIndex - 1 + ROOM_OPTIONS.length) % ROOM_OPTIONS.length
                     setSelectedRoom(ROOM_OPTIONS[prevIndex].id)
                   }}
-                  className="p-1 hover:bg-accent/10 rounded-full transition-colors"
+                  className="p-1 hover:bg-muse-selected/60 rounded-full transition-colors text-[#564738]"
                   aria-label="Previous room"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -286,7 +286,7 @@ export function ArtPreview({
                     const nextIndex = (currentIndex + 1) % ROOM_OPTIONS.length
                     setSelectedRoom(ROOM_OPTIONS[nextIndex].id)
                   }}
-                  className="p-1 hover:bg-accent/10 rounded-full transition-colors"
+                  className="p-1 hover:bg-muse-selected/60 rounded-full transition-colors text-[#564738]"
                   aria-label="Next room"
                 >
                   <ChevronRight className="h-4 w-4" />
@@ -331,7 +331,7 @@ export function ArtPreview({
                 "relative shrink-0 w-16 h-12 sm:w-20 sm:h-14 rounded-md overflow-hidden border-2 transition-all",
                 selectedRoom === room.id
                   ? "border-muse-peach ring-2 ring-muse-peach/25"
-                  : "border-border hover:border-muse-peach/50"
+                  : "border-[#E8DDD4] hover:border-muse-peach"
               )}
             >
               <Image

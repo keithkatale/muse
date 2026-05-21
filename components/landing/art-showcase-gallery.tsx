@@ -88,7 +88,7 @@ const artMediaItems = [
 
 export function ArtShowcaseGallery() {
   return (
-    <section className="py-24 sm:py-32 border-t border-border/50 bg-[hsl(40,25%,98%)]">
+    <section className="py-24 sm:py-32 bg-[#FEF8F2]">
       <div className="mx-auto max-w-6xl px-6 sm:px-8">
         <InteractiveBentoGallery
           mediaItems={artMediaItems}

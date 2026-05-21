@@ -13,7 +13,7 @@
 
   .font-heading {
     font-family: var(--font-heading), ui-serif, Georgia, serif;
-    font-style: italic;
+    font-style: normal;
     letter-spacing: -0.05em;
   }
 
@@ -84,7 +84,7 @@
   h2,
   h3 {
     font-family: var(--font-heading), ui-serif, Georgia, serif;
-    font-style: italic;
+    font-style: normal;
     letter-spacing: -0.05em;
   }
 }

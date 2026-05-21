@@ -4,7 +4,6 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 
 const stats = [
   { value: "10,000+", label: "Artworks created" },
@@ -14,17 +13,14 @@ const stats = [
 
 export function CtaSection() {
   return (
-    <section
-      className="muse-cta-section border-t border-[#564738]/30 py-24 sm:py-32"
-      style={{ backgroundColor: "#564738" }}
-    >
-      <div className="mx-auto max-w-4xl px-6 sm:px-8">
-        {/* Metrics */}
+    <section className="bg-[#564738] py-20 sm:py-28">
+      <div className="mx-auto max-w-6xl px-6 sm:px-8">
+        {/* Stats */}
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex flex-col sm:flex-row sm:justify-center gap-12 sm:gap-0"
+          className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8"
         >
           {stats.map((stat, i) => (
             <motion.div
@@ -32,18 +28,13 @@ export function CtaSection() {
               initial={{ opacity: 0, y: 8 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className={cn(
-                "text-center sm:px-12",
-                i > 0 && "sm:border-l sm:border-[#F6CDA1]/30"
-              )}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              className="rounded-2xl border border-[#F6CDA1]/20 bg-[#FEF8F2]/5 px-6 py-8 text-center sm:px-8"
             >
-              <p className="font-heading text-2xl sm:text-3xl text-[#FEF8F2]">
+              <p className="font-heading text-3xl sm:text-4xl text-[#FEF8F2]">
                 {stat.value}
               </p>
-              <p className="mt-2 text-xs uppercase tracking-widest text-[#F6CDA1]/80">
-                {stat.label}
-              </p>
+              <p className="mt-2 text-sm text-[#F6CDA1]">{stat.label}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -53,21 +44,25 @@ export function CtaSection() {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-20 text-center"
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="mt-14 sm:mt-20"
         >
-          <p className="font-heading text-2xl sm:text-3xl text-[#FEF8F2] mb-3">
-            Your masterpiece is <span className="italic">waiting</span>.
-          </p>
-          <p className="mb-8 max-w-lg mx-auto text-sm sm:text-base text-[#F6CDA1]/90">
-            Start your artistic journey today and transform your space with personalized wall art.
-          </p>
-          <Button asChild size="lg" variant="dark">
-            <Link href="/discover">
-              Get Started
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </Button>
+          <div className="mx-auto max-w-2xl rounded-[24px] border border-[#F6CDA1]/25 bg-[#FEF8F2]/[0.06] px-8 py-12 text-center sm:px-12 sm:py-14">
+            <h2 className="font-heading text-3xl sm:text-4xl text-[#FEF8F2] leading-tight">
+              Your masterpiece is waiting
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-[#F6CDA1] sm:text-lg">
+              Start your artistic journey today and transform your space with personalized wall art.
+            </p>
+            <div className="mt-8 flex justify-center">
+              <Button asChild size="lg" variant="dark">
+                <Link href="/discover">
+                  Get Started
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </Button>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>

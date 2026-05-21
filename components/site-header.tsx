@@ -25,9 +25,9 @@ export function SiteHeader() {
           <img
             src="/UI-elements/muse.svg"
             alt="Muse"
-            width={126}
-            height={32}
-            className="h-8 w-auto"
+            width={88}
+            height={22}
+            className="h-[22px] w-auto"
           />
         </Link>
 

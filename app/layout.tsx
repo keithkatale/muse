@@ -6,6 +6,7 @@ import { Toaster } from "sonner"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 import { SiteHeader } from "@/components/site-header"
+import { CookieConsentBanner } from "@/components/cookie-consent-banner"
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -45,9 +46,9 @@ const appleGaramond = localFont({
 })
 
 const appleGaramondHeading = localFont({
-  src: "../public/Font/AppleGaramond-LightItalic.ttf",
-  weight: "300",
-  style: "italic",
+  src: "../public/Font/AppleGaramond.ttf",
+  weight: "400",
+  style: "normal",
   variable: "--font-heading",
   display: "swap",
 })
@@ -65,11 +66,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${dmSans.variable} ${appleGaramond.variable} ${appleGaramondHeading.variable}`}>
-      <body className="font-serif antialiased">
+      <body className="font-sans antialiased">
         <Providers>
           <SiteHeader />
           <main>{children}</main>
           <Toaster position="bottom-right" />
+          <CookieConsentBanner />
         </Providers>
       </body>
     </html>

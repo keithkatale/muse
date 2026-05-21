@@ -289,17 +289,16 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ media
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8 text-center">
-        <motion.h1
-          className="text-2xl sm:text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900
-          dark:from-white dark:via-gray-200 dark:to-white"
+        <motion.h2
+          className="font-heading text-3xl sm:text-4xl md:text-5xl text-[#564738]"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           {title}
-        </motion.h1>
+        </motion.h2>
         <motion.p
-          className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400"
+          className="mt-4 text-sm sm:text-base text-[#947A5D] max-w-xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}

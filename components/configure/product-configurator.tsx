@@ -12,7 +12,7 @@ import {
   calculatePrice, formatPrice, validateResolution,
 } from "@/lib/mock-data"
 import { getShopifyVariantId } from "@/lib/product-mapping"
-import { selectionCard } from "@/lib/brand"
+import { configuratorSelectionCard } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 import { ArtPreview } from "./art-preview"
 import { GALLERY_ITEMS } from "@/lib/mock-data"
@@ -132,7 +132,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                     onClick={() => setSize(s.id)}
                     className={cn(
                       "flex flex-col items-center rounded-lg py-2.5 sm:py-3 text-xs",
-                      selectionCard(size === s.id, "rounded-lg")
+                      configuratorSelectionCard(size === s.id, "rounded-lg")
                     )}
                   >
                     <span className="font-medium">{s.label}</span>
@@ -141,7 +141,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                 ))}
               </div>
               {resolution && resolution.needsUpscale && (
-                <p className="mt-2 text-[11px] text-accent">
+                <p className="mt-2 text-[11px] text-muse-taupe">
                   This image will be AI-upscaled to ensure print quality at this size.
                 </p>
               )}
@@ -157,7 +157,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                     onClick={() => setMedium(m.id)}
                     className={cn(
                       "flex items-center justify-between rounded-lg px-4 py-3 text-left",
-                      selectionCard(medium === m.id, "rounded-lg")
+                      configuratorSelectionCard(medium === m.id, "rounded-lg")
                     )}
                   >
                     <div>
@@ -190,11 +190,11 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                     }}
                     className={cn(
                       "flex shrink-0 flex-col items-center gap-2 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3",
-                      selectionCard(frame === f.id, "rounded-lg")
+                      configuratorSelectionCard(frame === f.id, "rounded-lg")
                     )}
                   >
                     <div
-                      className="h-5 w-5 sm:h-6 sm:w-6 rounded-sm border border-border"
+                      className="h-5 w-5 sm:h-6 sm:w-6 rounded-sm border border-[#E8DDD4]"
                       style={{ backgroundColor: f.color === "transparent" ? "transparent" : f.color }}
                     />
                     <span className="text-[10px] sm:text-[11px] text-foreground whitespace-nowrap">{f.label}</span>
@@ -221,7 +221,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                       onClick={() => setMat(m.id)}
                       className={cn(
                         "flex-1 rounded-lg py-2.5 text-xs",
-                        selectionCard(mat === m.id, "rounded-lg")
+                        configuratorSelectionCard(mat === m.id, "rounded-lg")
                       )}
                     >
                       {m.label}
@@ -232,7 +232,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
             )}
 
             {/* Price Summary */}
-            <div className="rounded-lg border border-border bg-card p-5">
+            <div className="rounded-lg border border-[#E8DDD4] bg-muse-floral p-5">
               <div className="flex items-baseline justify-between">
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="font-heading text-3xl tracking-tight text-foreground">
@@ -245,7 +245,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
                 {FRAMES.find((f) => f.id === frame)?.label}
                 {mat !== "none" ? ` \u00b7 ${MATS.find((m) => m.id === mat)?.label}` : ""}
               </div>
-              <div className="mt-3 flex items-center gap-1.5 text-xs text-accent">
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-muse-taupe">
                 <Truck className="h-3.5 w-3.5" />
                 Free shipping
               </div>
@@ -255,6 +255,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
             <Button
               onClick={handleAddToCart}
               size="lg"
+              variant="default"
               className="w-full"
             >
               <ShoppingBag className="mr-2 h-4 w-4" />
