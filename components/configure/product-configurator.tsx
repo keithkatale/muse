@@ -109,7 +109,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
             <ArtPreview
               imageUrl={image.url}
               frame={frame}
-              room={profile?.room || "living-room"}
+              room={profile?.room || "wall-1"}
               size={size}
               mat={mat}
             />

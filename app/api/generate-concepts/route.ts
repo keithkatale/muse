@@ -51,12 +51,18 @@ const MOOD_LABELS: Record<string, string> = {
   playful: "playful, whimsical",
 }
 const ROOM_LABELS: Record<string, string> = {
-  "living-room": "living room",
-  bedroom: "bedroom",
-  office: "office",
-  dining: "dining room",
-  nursery: "nursery",
-  hallway: "hallway",
+  "wall-1": "living room",
+  "wall-2": "living room",
+  "wall-3": "art studio",
+  "wall-4": "bedroom",
+  "wall-5": "home office",
+  "wall-6": "living room",
+  "wall-7": "parlor",
+  "wall-8": "executive lounge",
+  "wall-9": "creative studio",
+  "wall-10": "lounge",
+  "wall-11": "dining room",
+  "wall-12": "workspace",
 }
 
 function buildProfileSummary(profile: StyleProfile): string {

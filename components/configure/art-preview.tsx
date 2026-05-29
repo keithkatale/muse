@@ -8,19 +8,131 @@ import { FRAMES } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import type { RoomOption } from "@/lib/types"
 
-const ROOM_IMAGES: Record<string, string> = {
-  "living-room": "/preview/living.png",
-  "bedroom": "/preview/bedroom.jpg",
-  "office": "/preview/office.jpg",
-  "dining": "/preview/dining.jpg",
+interface RoomConfig {
+  id: string
+  label: string
+  image: string
+  left: string
+  top: string
+  width: string
+  height: string
 }
 
-const ROOM_OPTIONS = [
-  { id: "living-room", label: "Living Room" },
-  { id: "bedroom", label: "Bedroom" },
-  { id: "office", label: "Office" },
-  { id: "dining", label: "Dining Room" },
-]
+const ROOM_CONFIGS: Record<string, RoomConfig> = {
+  "wall-1": {
+    id: "wall-1",
+    label: "Warm Scandinavian Studio",
+    image: "/images/rooms/wall-1.jpg",
+    left: "15.0%",
+    top: "7.7%",
+    width: "42.5%",
+    height: "65.4%",
+  },
+  "wall-2": {
+    id: "wall-2",
+    label: "Minimalist Living Room",
+    image: "/images/rooms/wall-2.jpg",
+    left: "50.0%",
+    top: "6.7%",
+    width: "45.0%",
+    height: "80.0%",
+  },
+  "wall-3": {
+    id: "wall-3",
+    label: "Modern Studio Wall",
+    image: "/images/rooms/wall-3.jpg",
+    left: "5.0%",
+    top: "9.5%",
+    width: "52.5%",
+    height: "76.2%",
+  },
+  "wall-4": {
+    id: "wall-4",
+    label: "Boho Bedroom",
+    image: "/images/rooms/wall-4.jpg",
+    left: "12.5%",
+    top: "23.1%",
+    width: "20.0%",
+    height: "23.1%",
+  },
+  "wall-5": {
+    id: "wall-5",
+    label: "Earthy Workspace",
+    image: "/images/rooms/wall-5.jpg",
+    left: "27.5%",
+    top: "15.4%",
+    width: "30.0%",
+    height: "34.6%",
+  },
+  "wall-6": {
+    id: "wall-6",
+    label: "Minimalist Gallery",
+    image: "/images/rooms/wall-6.jpg",
+    left: "15.0%",
+    top: "9.1%",
+    width: "40.0%",
+    height: "54.5%",
+  },
+  "wall-7": {
+    id: "wall-7",
+    label: "Luxury Parlor",
+    image: "/images/rooms/wall-7.jpg",
+    left: "70.0%",
+    top: "13.6%",
+    width: "25.0%",
+    height: "59.1%",
+  },
+  "wall-8": {
+    id: "wall-8",
+    label: "Executive Lounge",
+    image: "/images/rooms/wall-8.jpg",
+    left: "45.0%",
+    top: "18.2%",
+    width: "30.0%",
+    height: "40.9%",
+  },
+  "wall-9": {
+    id: "wall-9",
+    label: "Creative Corner",
+    image: "/images/rooms/wall-9.jpg",
+    left: "50.0%",
+    top: "7.4%",
+    width: "40.0%",
+    height: "44.4%",
+  },
+  "wall-10": {
+    id: "wall-10",
+    label: "Contemporary Lounge",
+    image: "/images/rooms/wall-10.jpg",
+    left: "17.5%",
+    top: "16.7%",
+    width: "35.0%",
+    height: "46.7%",
+  },
+  "wall-11": {
+    id: "wall-11",
+    label: "Bright Atelier",
+    image: "/images/rooms/wall-11.jpg",
+    left: "22.5%",
+    top: "6.7%",
+    width: "57.5%",
+    height: "56.7%",
+  },
+  "wall-12": {
+    id: "wall-12",
+    label: "Stylish Workspace",
+    image: "/images/rooms/wall-12.jpg",
+    left: "55.0%",
+    top: "30.0%",
+    width: "40.0%",
+    height: "40.0%",
+  },
+}
+
+const ROOM_OPTIONS = Object.values(ROOM_CONFIGS)
+const ROOM_IMAGES = Object.fromEntries(
+  Object.entries(ROOM_CONFIGS).map(([key, c]) => [key, c.image])
+) as Record<string, string>
 
 type PreviewMode = "art" | "room" | "detail"
 
@@ -97,10 +209,16 @@ export function ArtPreview({
   mat?: string
 }) {
   const [mode, setMode] = useState<PreviewMode>("room")
-  const [selectedRoom, setSelectedRoom] = useState(initialRoom)
+  const [selectedRoom, setSelectedRoom] = useState<string>(() => {
+    if (initialRoom && initialRoom in ROOM_CONFIGS) {
+      return initialRoom
+    }
+    return "wall-1"
+  })
   
   const frameData = FRAMES.find((f) => f.id === frame)
-  const roomImage = ROOM_IMAGES[selectedRoom] || ROOM_IMAGES["living-room"]
+  const roomConfig = ROOM_CONFIGS[selectedRoom] || ROOM_CONFIGS["wall-1"]
+  const roomImage = roomConfig.image
 
   const hasFrame = frame !== "none"
   const hasMat = mat !== "none" && hasFrame
@@ -212,55 +330,59 @@ export function ArtPreview({
                 className="object-cover"
               />
               {/* Art overlay positioned on wall */}
-              <div className="absolute inset-0 flex items-center justify-center" style={{ paddingBottom: "10%" }}>
-                <motion.div
-                  animate={{ scale: sizeScale }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  style={{
-                    ...frameStyle,
-                    borderWidth: hasFrame ? frameStyle.borderWidth : "0px",
-                    borderStyle: "solid",
-                    borderColor: frameStyle.borderColor,
-                    boxShadow: frameStyle.boxShadow,
-                    background: frameStyle.background,
-                    borderRadius: frame === "float" ? "2px" : "0px",
-                  }}
-                  className="relative overflow-hidden"
-                >
-                  {/* Mat layer */}
-                  {hasMat && (
-                    <div 
-                      className="p-1.5 sm:p-2"
-                      style={{ backgroundColor: matColor }}
-                    >
-                      <div className="relative aspect-[3/4] w-14 sm:w-20 md:w-28 lg:w-36 shadow-inner">
-                        <Image
-                          src={imageUrl}
-                          alt="Art in room"
-                          fill
-                          sizes="(max-width: 640px) 56px, (max-width: 768px) 80px, (max-width: 1024px) 112px, 144px"
-                          className="object-cover"
-                          unoptimized
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* No mat - direct image */}
-                  {!hasMat && (
-                    <div className="relative aspect-[3/4] w-20 sm:w-28 md:w-36 lg:w-44">
+              <motion.div
+                animate={{ scale: sizeScale }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                style={{
+                  ...frameStyle,
+                  borderWidth: hasFrame ? frameStyle.borderWidth : "0px",
+                  borderStyle: "solid",
+                  borderColor: frameStyle.borderColor,
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.20), 0 4px 10px rgba(0,0,0,0.12)",
+                  background: frameStyle.background,
+                  borderRadius: frame === "float" ? "2px" : "0px",
+                  position: "absolute",
+                  left: roomConfig.left,
+                  top: roomConfig.top,
+                  width: roomConfig.width,
+                  height: roomConfig.height,
+                  transformOrigin: "center center",
+                }}
+                className="overflow-hidden"
+              >
+                {/* Mat layer */}
+                {hasMat && (
+                  <div 
+                    className="absolute inset-0 p-[5%] flex items-center justify-center"
+                    style={{ backgroundColor: matColor }}
+                  >
+                    <div className="relative w-full h-full shadow-inner">
                       <Image
                         src={imageUrl}
                         alt="Art in room"
                         fill
-                        sizes="(max-width: 640px) 80px, (max-width: 768px) 112px, (max-width: 1024px) 144px, 176px"
+                        sizes="(max-width: 1024px) 50vw, 30vw"
                         className="object-cover"
                         unoptimized
                       />
                     </div>
-                  )}
-                </motion.div>
-              </div>
+                  </div>
+                )}
+                
+                {/* No mat - direct image */}
+                {!hasMat && (
+                  <div className="absolute inset-0 w-full h-full">
+                    <Image
+                      src={imageUrl}
+                      alt="Art in room"
+                      fill
+                      sizes="(max-width: 1024px) 50vw, 30vw"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  </div>
+                )}
+              </motion.div>
 
               {/* Room Navigation */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-muse-floral/95 backdrop-blur-sm rounded-full border border-[#E8DDD4] px-3 py-2 shadow-lg text-[#564738]">

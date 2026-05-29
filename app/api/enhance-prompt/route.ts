@@ -53,12 +53,18 @@ export async function POST(request: Request) {
   }
 
   const roomMap: Record<string, string> = {
-    "living-room": "a living room focal wall above a sofa",
-    bedroom: "a calming bedroom setting above a headboard",
-    office: "a modern home office or studio backdrop",
-    dining: "a dining room feature wall",
-    nursery: "a soft, comforting nursery space",
-    hallway: "a hallway or entryway gallery wall",
+    "wall-1": "a warm Scandinavian style living room focal wall",
+    "wall-2": "a minimalist modern lounge room background",
+    "wall-3": "a modern art studio wall",
+    "wall-4": "a cozy warm boho bedroom",
+    "wall-5": "an earthy studio workspace backdrop",
+    "wall-6": "a sleek minimalist gallery wall",
+    "wall-7": "a luxurious parlor room setting",
+    "wall-8": "an elegant executive lounge backdrop",
+    "wall-9": "a creative studio corner setting",
+    "wall-10": "a contemporary elegant lounge focal wall",
+    "wall-11": "a bright, sun-drenched atelier setting",
+    "wall-12": "a stylish designer workspace background",
   }
 
   const aspectMap: Record<string, string> = {

@@ -276,12 +276,18 @@ export const MOOD_OPTIONS = [
 ]
 
 export const ROOM_OPTIONS = [
-  { id: "living-room" as const, label: "Living Room", image: "/images/rooms/living-room.jpg" },
-  { id: "bedroom" as const, label: "Bedroom", image: "/images/rooms/bedroom.jpg" },
-  { id: "office" as const, label: "Office", image: "/images/rooms/office.jpg" },
-  { id: "dining" as const, label: "Dining Room", image: "/images/rooms/dining.jpg" },
-  { id: "nursery" as const, label: "Nursery", image: "/images/rooms/nursery.jpg" },
-  { id: "hallway" as const, label: "Hallway", image: "/images/rooms/hallway.jpg" },
+  { id: "wall-1" as const, label: "Warm Scandinavian Studio", image: "/images/rooms/wall-1.jpg" },
+  { id: "wall-2" as const, label: "Minimalist Living Room", image: "/images/rooms/wall-2.jpg" },
+  { id: "wall-3" as const, label: "Modern Studio Wall", image: "/images/rooms/wall-3.jpg" },
+  { id: "wall-4" as const, label: "Boho Bedroom", image: "/images/rooms/wall-4.jpg" },
+  { id: "wall-5" as const, label: "Earthy Workspace", image: "/images/rooms/wall-5.jpg" },
+  { id: "wall-6" as const, label: "Minimalist Gallery", image: "/images/rooms/wall-6.jpg" },
+  { id: "wall-7" as const, label: "Luxury Parlor", image: "/images/rooms/wall-7.jpg" },
+  { id: "wall-8" as const, label: "Executive Lounge", image: "/images/rooms/wall-8.jpg" },
+  { id: "wall-9" as const, label: "Creative Corner", image: "/images/rooms/wall-9.jpg" },
+  { id: "wall-10" as const, label: "Contemporary Lounge", image: "/images/rooms/wall-10.jpg" },
+  { id: "wall-11" as const, label: "Bright Atelier", image: "/images/rooms/wall-11.jpg" },
+  { id: "wall-12" as const, label: "Stylish Workspace", image: "/images/rooms/wall-12.jpg" },
 ]
 
 // ── Pricing Helpers ──

@@ -48,7 +48,7 @@ export function PromptPanel() {
           styles: ["realistic"],
           subjects: ["landscapes"],
           mood: "calm",
-          room: "living-room",
+          room: "wall-1",
         }
 
       const enhanceRes = await fetch("/api/enhance-prompt", {
