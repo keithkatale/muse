@@ -126,7 +126,7 @@ const MediaItem = ({ item, className, onClick }: { item: MediaItemType, classNam
       alt={item.title} // Alt text for the image
       fill
       sizes="(max-width: 640px) 50vw, 33vw"
-      className={`${className} object-cover cursor-pointer`} // Style the image
+      className={`${className} object-cover cursor-inherit`} // Style the image
       onClick={onClick} // Trigger onClick when the image is clicked
     />
   )
@@ -285,6 +285,16 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ media
   const [selectedItem, setSelectedItem] = useState<MediaItemType | null>(null)
   const [items, setItems] = useState(mediaItems)
   const [isDragging, setIsDragging] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -308,7 +318,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ media
       </div>
 
       <AnimatePresence mode="wait">
-        {selectedItem ? (
+        {selectedItem && !isMobile ? (
           <GalleryModal
             selectedItem={selectedItem}
             isOpen={true}
@@ -334,8 +344,11 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ media
               <motion.div
                 key={item.id}
                 layoutId={`media-${item.id}`}
-                className={`relative overflow-hidden rounded-xl cursor-move ${item.span}`}
-                onClick={() => !isDragging && setSelectedItem(item)}
+                className={`relative overflow-hidden rounded-xl pointer-events-none md:pointer-events-auto cursor-default md:cursor-grab md:active:cursor-grabbing ${item.span}`}
+                onClick={() => {
+                  if (isMobile) return
+                  if (!isDragging) setSelectedItem(item)
+                }}
                 variants={{
                   hidden: { y: 50, scale: 0.9, opacity: 0 },
                   visible: {
@@ -350,12 +363,13 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ media
                     }
                   }
                 }}
-                whileHover={{ scale: 1.02 }}
-                drag
+                whileHover={isMobile ? {} : { scale: 1.02 }}
+                drag={isMobile ? false : true}
                 dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
                 dragElastic={1}
                 onDragStart={() => setIsDragging(true)}
                 onDragEnd={(e, info) => {
+                  if (isMobile) return
                   setIsDragging(false)
                   const moveDistance = info.offset.x + info.offset.y
                   if (Math.abs(moveDistance) > 50) {
@@ -373,13 +387,13 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ media
                 <MediaItem
                   item={item}
                   className="absolute inset-0 w-full h-full"
-                  onClick={() => !isDragging && setSelectedItem(item)}
+                  onClick={() => {
+                    if (isMobile) return
+                    if (!isDragging) setSelectedItem(item)
+                  }}
                 />
-                <motion.div
-                  className="absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
+                <div
+                  className="absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4 opacity-100 md:opacity-0 md:hover:opacity-100 transition-opacity duration-200"
                 >
                   <div className="absolute inset-0 flex flex-col justify-end p-2 sm:p-3 md:p-4">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -390,7 +404,7 @@ const InteractiveBentoGallery: React.FC<InteractiveBentoGalleryProps> = ({ media
                       {item.desc}
                     </p>
                   </div>
-                </motion.div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
