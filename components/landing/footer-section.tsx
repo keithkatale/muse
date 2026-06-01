@@ -29,6 +29,12 @@ export function FooterSection() {
             <Link href="/gallery" className="hover:text-muse-brown transition-colors">
               Gallery
             </Link>
+            <Link href="/privacy" className="hover:text-muse-brown transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-muse-brown transition-colors">
+              Terms
+            </Link>
             <Link href="/cookies" className="hover:text-muse-brown transition-colors">
               Cookies
             </Link>

@@ -46,6 +46,19 @@ export function OrientationStep({ selected, onSelect }: OrientationStepProps) {
         <p className="text-muted-foreground text-lg">
           Select the orientation that best fits your wall space and vision
         </p>
+        <div className="mt-4 flex justify-center">
+          {selected === null ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-muse-selected/40 border border-muse-peach/40 px-3.5 py-1 text-xs font-medium text-muse-brown animate-pulse">
+              <span className="h-2 w-2 rounded-full bg-muse-peach animate-ping" />
+              Please select an option below
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50/60 border border-emerald-200 px-3.5 py-1 text-xs font-medium text-emerald-800">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Orientation selected
+            </span>
+          )}
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -61,17 +74,18 @@ export function OrientationStep({ selected, onSelect }: OrientationStepProps) {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               onClick={() => onSelect(orientation.id)}
               className={cn(
-                "group relative overflow-hidden rounded-2xl p-8 text-left hover:shadow-lg",
+                "group relative overflow-hidden rounded-2xl p-8 text-left hover:shadow-lg transition-all duration-300",
+                selected !== null && !isSelected && "opacity-50 scale-95",
                 selectionCard(isSelected, "rounded-2xl")
               )}
             >
               {/* Visual Preview */}
               <div className="mb-6 flex justify-center">
-                <div className={`relative rounded-lg border-2 bg-muted/30 ${
+                <div className={`relative rounded-lg border-2 bg-muted/30 transition-all duration-300 ${
                   orientation.id === "portrait" ? "h-32 w-24" : "h-24 w-32"
-                } ${isSelected ? "border-muse-peach" : "border-border"}`}>
+                } ${isSelected ? "border-muse-peach scale-105" : "border-border"}`}>
                   <div className="absolute inset-2 rounded bg-gradient-to-br from-muse-peach/30 to-muse-selected/50" />
-                  <Icon className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${
+                  <Icon className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-colors duration-300 ${
                     isSelected ? "text-muse-brown" : "text-muted-foreground"
                   }`} size={20} />
                 </div>
@@ -79,7 +93,7 @@ export function OrientationStep({ selected, onSelect }: OrientationStepProps) {
 
               {/* Content */}
               <div className="space-y-3">
-                <h3 className={`font-heading text-2xl transition-colors ${
+                <h3 className={`font-heading text-2xl transition-colors duration-300 ${
                   isSelected ? "text-muse-brown" : "text-foreground group-hover:text-muse-taupe"
                 }`}>
                   {orientation.label}
@@ -101,23 +115,29 @@ export function OrientationStep({ selected, onSelect }: OrientationStepProps) {
                 </div>
               </div>
 
-              {/* Selection Indicator */}
-              {isSelected && (
+              {/* Selection Status Badge */}
+              {selected === null ? (
+                <div className="absolute top-4 right-4 rounded-full border border-dashed border-muse-taupe/60 bg-transparent px-2.5 py-1 text-[10px] font-semibold tracking-wider uppercase text-muse-taupe flex items-center gap-1.5 transition-all duration-300">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muse-taupe animate-pulse" />
+                  Unselected
+                </div>
+              ) : isSelected ? (
                 <motion.div
                   layoutId="orientation-selection"
-                  className="absolute top-4 right-4 h-6 w-6 rounded-full bg-muse-peach"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                  className="absolute top-4 right-4 rounded-full bg-muse-peach px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-[#564738] flex items-center gap-1 shadow-sm"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-2 w-2 rounded-full bg-white" />
-                  </div>
+                  <svg className="h-3 w-3 text-[#564738]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Selected
                 </motion.div>
-              )}
+              ) : null}
 
               {/* Hover Effect */}
-              <div className={`absolute inset-0 rounded-2xl transition-opacity ${
+              <div className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
                 isSelected ? "bg-muse-selected/30" : "bg-transparent group-hover:bg-muse-selected/20"
               }`} />
             </motion.button>
