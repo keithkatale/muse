@@ -219,15 +219,32 @@ export function ResultsPanel() {
               Refine Direction
             </p>
             <div className="flex flex-wrap gap-2">
-              {DIRECTION_TAGS.map((tag) => (
-                <button
-                  key={tag.id}
-                  onClick={() => handleRefine(tag.id)}
-                  className={selectionPill(activeModifiers.includes(tag.id))}
-                >
-                  {tag.label}
-                </button>
-              ))}
+              {DIRECTION_TAGS.map((tag) => {
+                const isSelected = activeModifiers.includes(tag.id)
+                return (
+                  <button
+                    key={tag.id}
+                    onClick={() => handleRefine(tag.id)}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-all duration-200 border",
+                      isSelected
+                        ? "border-muse-peach bg-muse-selected text-foreground font-semibold shadow-sm"
+                        : "border-dashed border-muse-taupe/40 bg-[#FAF6F0] text-muted-foreground hover:border-muse-peach/60 hover:bg-muse-selected/10"
+                    )}
+                  >
+                    {isSelected ? (
+                      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-muse-peach text-[#564738] font-bold text-[9px]">
+                        ✓
+                      </span>
+                    ) : (
+                      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-dashed border-muse-taupe/40 text-muse-taupe text-xs font-semibold">
+                        +
+                      </span>
+                    )}
+                    <span>{tag.label}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
