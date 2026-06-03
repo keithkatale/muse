@@ -28,8 +28,8 @@ export const MUSE_GALLERY_IMAGES: readonly string[] = [
   "/images/pick-2/retro.png",
   "/images/pick-2/illustrated.png",
   "/preview/bedroom.jpg",
-  "/preview/living.png",
-  "/preview/dining.jpg",
+  "/images/mock-views/bedroom art mockup (1).jpg",
+  "/images/mock-views/dinining art mockup (1).jpg",
 ];
 
 const easeIntoFocus = cubicBezier(0.22, 1, 0.36, 1);
