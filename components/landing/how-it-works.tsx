@@ -82,20 +82,12 @@ export function HowItWorks() {
 
                   {/* Content */}
                   <div className="px-6 sm:px-8 py-5">
-                    <div className="flex items-end justify-between gap-4">
-                      <div className="flex-1">
-                        <h3 className="font-heading text-xl sm:text-2xl text-[#564738] mb-2">
-                          {step.title}
-                        </h3>
-                        <p className="text-[12px] sm:text-[13px] text-[#947A5D] leading-relaxed max-w-[200px]">
-                          {step.description}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[#947A5D] group-hover:text-[#564738] group-hover:gap-2.5 transition-all duration-300 shrink-0">
-                        <span className="text-[12px] sm:text-[13px]">Get started</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </div>
-                    </div>
+                    <h3 className="font-heading text-xl sm:text-2xl text-[#564738] mb-2">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm sm:text-base text-[#947A5D] leading-relaxed">
+                      {step.description}
+                    </p>
                   </div>
                 </div>
               </Link>

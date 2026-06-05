@@ -60,16 +60,6 @@ export function CtaSection() {
         
         {/* Core Marketing Header */}
         <div className="text-center max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#564738]/10 bg-white/40 text-xs text-[#564738] font-medium mb-6 shadow-xs"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#564738]" />
-            <span>Museum-Quality Canvas Prints</span>
-          </motion.div>
-
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
