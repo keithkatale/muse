@@ -1,34 +1,39 @@
 import { NextResponse } from "next/server"
+import { isShopifyConfigured, getShopifyAccessToken } from "@/lib/shopify-admin"
 
 export async function GET() {
   const domain = process.env.SHOPIFY_STORE_DOMAIN
-  const token = process.env.SHOPIFY_ACCESS_TOKEN
-  const version = process.env.SHOPIFY_API_VERSION
+  const version = process.env.SHOPIFY_API_VERSION || '2026-01'
+  const isConfigured = isShopifyConfigured()
 
   console.log("🔍 Shopify Configuration Check:")
   console.log("Domain:", domain || "NOT SET")
-  console.log("Token:", token ? `${token.substring(0, 10)}...` : "NOT SET")
-  console.log("Version:", version || "NOT SET")
+  console.log("Is Configured:", isConfigured)
+  console.log("Version:", version)
 
-  if (!domain || !token) {
+  if (!isConfigured) {
     return NextResponse.json({
       configured: false,
       message: "❌ Shopify credentials not configured",
       details: {
         domain: !!domain,
-        token: !!token,
+        clientId: !!process.env.SHOPIFY_CLIENT_ID,
+        clientSecret: !!process.env.SHOPIFY_CLIENT_SECRET,
         version: !!version
       },
-      instructions: "Set SHOPIFY_STORE_DOMAIN and SHOPIFY_ACCESS_TOKEN in .env.local"
+      instructions: "Set SHOPIFY_STORE_DOMAIN, SHOPIFY_CLIENT_ID, and SHOPIFY_CLIENT_SECRET in .env.local"
     })
   }
 
   // Test the Admin API connection
-  const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '')
-  const endpoint = `https://${cleanDomain}/admin/api/${version || '2024-01'}/shop.json`
+  const cleanDomain = domain!.replace(/^https?:\/\//, '').replace(/\/$/, '')
+  const endpoint = `https://${cleanDomain}/admin/api/${version}/shop.json`
   
   try {
     console.log("🔗 Testing Admin API connection to:", endpoint)
+    
+    // Retrieve dynamic access token
+    const token = await getShopifyAccessToken()
     
     const response = await fetch(endpoint, {
       method: 'GET',
