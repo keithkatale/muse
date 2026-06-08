@@ -36,8 +36,9 @@ export async function POST(request: Request) {
       variant_id: item.variantId && !item.variantId.includes('mock') 
         ? parseInt(item.variantId.split('/').pop() || '0') 
         : undefined,
+      image: item.imageUrl ? { src: item.imageUrl } : undefined,
       properties: [
-        { name: "Image URL", value: item.imageUrl },
+        { name: "__Image URL", value: item.imageUrl },
         { name: "Size", value: item.size },
         { name: "Medium", value: item.medium },
         { name: "Frame", value: item.frame },

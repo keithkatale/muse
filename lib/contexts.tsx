@@ -68,14 +68,20 @@ export function StyleProfileProvider({ children }: { children: React.ReactNode }
     localStorage.removeItem("muse-style-profile")
   }, [])
 
-  const isQuizComplete = !!profile && 
-    profile.email && profile.email.length > 0 && 
-    profile.palettes && profile.palettes.length > 0 && 
-    profile.styles && profile.styles.length > 0 && 
-    profile.subjects && profile.subjects.length > 0 && 
-    !!profile.mood && 
-    !!profile.room && 
-    !!profile.orientation
+  const isQuizComplete = !!(
+    profile && 
+    profile.email && 
+    profile.email.length > 0 && 
+    profile.palettes && 
+    profile.palettes.length > 0 && 
+    profile.styles && 
+    profile.styles.length > 0 && 
+    profile.subjects && 
+    profile.subjects.length > 0 && 
+    profile.mood && 
+    profile.room && 
+    profile.orientation
+  )
 
   if (!loaded) return null
 

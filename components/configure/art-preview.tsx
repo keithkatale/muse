@@ -203,7 +203,7 @@ export function ArtPreview({
   mat = "none",
 }: {
   imageUrl: string
-  frame: string
+  frame: string | null
   room: string
   size?: string
   mat?: string
@@ -216,18 +216,18 @@ export function ArtPreview({
     return "wall-1"
   })
   
-  const frameData = FRAMES.find((f) => f.id === frame)
+  const frameData = frame ? FRAMES.find((f) => f.id === frame) : undefined
   const roomConfig = ROOM_CONFIGS[selectedRoom] || ROOM_CONFIGS["wall-1"]
   const roomImage = roomConfig.image
 
-  const hasFrame = frame !== "none"
+  const hasFrame = frame !== "none" && frame !== null
   const hasMat = mat !== "none" && hasFrame
   
   // Get scale factor based on size
   const sizeScale = SIZE_SCALES[size] || 1.0
   
   // Get frame style
-  const frameStyle = FRAME_STYLES[frame] || FRAME_STYLES["none"]
+  const frameStyle = FRAME_STYLES[frame || "none"] || FRAME_STYLES["none"]
 
   // Mat color
   const matColor = mat === "white" ? "#ffffff" : mat === "off-white" ? "#f5f5dc" : "transparent"
@@ -258,7 +258,7 @@ export function ArtPreview({
         <AnimatePresence mode="wait">
           {mode === "art" && (
             <motion.div
-              key="art"
+              key="art-view-container"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -272,106 +272,115 @@ export function ArtPreview({
                   borderWidth: hasFrame ? frameStyle.borderWidth : "0px",
                   borderStyle: "solid",
                   borderColor: frameStyle.borderColor,
-                  boxShadow: frameStyle.boxShadow,
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.12)",
                   background: frameStyle.background,
                   borderRadius: frame === "float" ? "2px" : "0px",
+                  willChange: "transform",
                 }}
-                className="relative overflow-hidden"
+                className="relative overflow-hidden transition-all duration-300 transform-gpu"
               >
-                {/* Mat layer */}
-                {hasMat && (
+                {/* Stable Artwork Mounting Container with fluid mat border growth */}
+                <div 
+                  className="transition-all duration-300 ease-out flex items-center justify-center transform-gpu"
+                  style={{ 
+                    padding: hasMat ? "16px" : "0px",
+                    backgroundColor: hasMat ? matColor : "transparent",
+                    willChange: "padding, background-color"
+                  }}
+                >
                   <div 
-                    className="p-3 sm:p-4"
-                    style={{ backgroundColor: matColor }}
+                    className="relative aspect-[3/4] transition-all duration-300 ease-out shadow-inner"
+                    style={{
+                      width: hasMat ? "200px" : "240px", // stable dimension scales
+                      willChange: "width"
+                    }}
                   >
-                    <div className="relative aspect-[3/4] w-32 sm:w-40 md:w-56 lg:w-64 shadow-inner">
-                      <Image
-                        src={imageUrl}
-                        alt="Your art"
-                        fill
-                        sizes="(max-width: 640px) 128px, (max-width: 768px) 160px, (max-width: 1024px) 224px, 256px"
-                        className="object-cover"
-                        unoptimized
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                {/* No mat - direct image */}
-                {!hasMat && (
-                  <div className="relative aspect-[3/4] w-40 sm:w-48 md:w-64 lg:w-72">
                     <Image
                       src={imageUrl}
                       alt="Your art"
                       fill
-                      sizes="(max-width: 640px) 160px, (max-width: 768px) 192px, (max-width: 1024px) 256px, 288px"
+                      sizes="(max-width: 640px) 200px, (max-width: 768px) 240px, 320px"
                       className="object-cover"
                       unoptimized
                     />
                   </div>
-                )}
+                </div>
               </motion.div>
             </motion.div>
           )}
 
           {mode === "room" && (
             <motion.div
-              key={`room-${selectedRoom}`}
+              key="room-view-container"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="relative h-full"
+              className="relative h-full w-full overflow-hidden select-none"
             >
-              <Image
-                src={roomImage}
-                alt="Room mockup"
-                fill
-                sizes="(max-width: 1024px) 100vw, 60vw"
-                className="object-cover"
-              />
-              {/* Art overlay positioned on wall */}
+              {/* Layered room background images for double-buffering preloading */}
+              <div className="absolute inset-0 w-full h-full pointer-events-none transform-gpu">
+                {ROOM_OPTIONS.map((room) => (
+                  <div
+                    key={room.id}
+                    className="absolute inset-0 w-full h-full transition-opacity duration-500 ease-in-out transform-gpu"
+                    style={{
+                      opacity: selectedRoom === room.id ? 1 : 0,
+                      zIndex: selectedRoom === room.id ? 1 : 0,
+                    }}
+                  >
+                    <Image
+                      src={room.image}
+                      alt={room.label}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 60vw"
+                      className="object-cover"
+                      loading="lazy"
+                      priority={room.id === "wall-1"}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Art overlay positioned on wall - glides smoothly on room changes */}
               <motion.div
-                animate={{ scale: sizeScale }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
+                animate={{
+                  scale: sizeScale,
+                  left: roomConfig.left,
+                  top: roomConfig.top,
+                  width: roomConfig.width,
+                  height: roomConfig.height,
+                }}
+                transition={{
+                  duration: 0.5,
+                  ease: [0.25, 0.1, 0.25, 1], // premium cubic bezier
+                }}
                 style={{
                   ...frameStyle,
                   borderWidth: hasFrame ? frameStyle.borderWidth : "0px",
                   borderStyle: "solid",
                   borderColor: frameStyle.borderColor,
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.20), 0 4px 10px rgba(0,0,0,0.12)",
+                  boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.15)",
                   background: frameStyle.background,
                   borderRadius: frame === "float" ? "2px" : "0px",
                   position: "absolute",
-                  left: roomConfig.left,
-                  top: roomConfig.top,
-                  width: roomConfig.width,
-                  height: roomConfig.height,
                   transformOrigin: "center center",
+                  zIndex: 2,
+                  willChange: "transform, left, top, width, height",
                 }}
                 className="overflow-hidden"
               >
-                {/* Mat layer */}
-                {hasMat && (
-                  <div 
-                    className="absolute inset-0 p-[5%] flex items-center justify-center"
-                    style={{ backgroundColor: matColor }}
-                  >
-                    <div className="relative w-full h-full shadow-inner">
-                      <Image
-                        src={imageUrl}
-                        alt="Art in room"
-                        fill
-                        sizes="(max-width: 1024px) 50vw, 30vw"
-                        className="object-cover"
-                        unoptimized
-                      />
-                    </div>
-                  </div>
-                )}
-                
-                {/* No mat - direct image */}
-                {!hasMat && (
-                  <div className="absolute inset-0 w-full h-full">
+                {/* Stable Artwork Mounting Container with fluid mat border growth */}
+                <div 
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-out transform-gpu"
+                  )}
+                  style={{ 
+                    padding: hasMat ? "5%" : "0px",
+                    backgroundColor: hasMat ? matColor : "transparent",
+                    willChange: "padding, background-color"
+                  }}
+                >
+                  <div className={cn("relative w-full h-full transition-all duration-300", hasMat && "shadow-inner")}>
                     <Image
                       src={imageUrl}
                       alt="Art in room"
@@ -381,11 +390,11 @@ export function ArtPreview({
                       unoptimized
                     />
                   </div>
-                )}
+                </div>
               </motion.div>
 
               {/* Room Navigation */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-muse-floral/95 backdrop-blur-sm rounded-full border border-[#E8DDD4] px-3 py-2 shadow-lg text-[#564738]">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-muse-floral/95 backdrop-blur-sm rounded-full border border-[#E8DDD4] px-3 py-2 shadow-lg text-[#564738] z-10">
                 <button
                   onClick={() => {
                     const currentIndex = ROOM_OPTIONS.findIndex(r => r.id === selectedRoom)
@@ -419,7 +428,7 @@ export function ArtPreview({
 
           {mode === "detail" && (
             <motion.div
-              key="detail"
+              key="detail-view-container"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

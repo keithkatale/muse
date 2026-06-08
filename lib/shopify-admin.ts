@@ -20,6 +20,7 @@ interface OrderItem {
   sku?: string
   variant_id?: number
   properties?: Array<{ name: string; value: string }>
+  image?: { src: string }
 }
 
 interface ShopifyTokenCache {
@@ -127,7 +128,8 @@ export async function createDraftOrder(
         price: item.price,
         variant_id: item.variant_id,
         properties: item.properties,
-        requires_shipping: true
+        requires_shipping: true,
+        image: item.image
       })),
       use_customer_default_address: false
     }
@@ -156,7 +158,11 @@ export async function createDraftOrder(
         throw new Error('Shopify authentication failed. Check your SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET or Admin access token.')
       }
       
-      throw new Error(`Shopify API error: ${response.status} ${response.statusText}`)
+      if (response.status === 403) {
+        throw new Error('Shopify Permission Error (403 Forbidden): Your Custom App token does not have the required "write_draft_orders" scope. To fix this: 1. Go to Shopify Partners Dashboard. 2. Open your App settings. 3. Go to Configuration -> Admin API integration. 4. Enable "write_draft_orders" and "read_draft_orders" scopes. 5. Save and Release the configuration. 6. Reinstall the app on your store.')
+      }
+      
+      throw new Error(`Shopify API error: ${response.status} ${response.statusText}. Details: ${errorText}`)
     }
 
     const data = await response.json()

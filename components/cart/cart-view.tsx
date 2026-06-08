@@ -1,32 +1,80 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Trash2, ArrowRight, ShoppingBag, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useCart } from "@/lib/contexts"
+import { useCart, useStyleProfile } from "@/lib/contexts"
 import { formatPrice } from "@/lib/mock-data"
 
 export function CartView() {
   const router = useRouter()
   const { cart, removeItem, itemCount, totalPrice, clearCart } = useCart()
+  const { profile } = useStyleProfile()
   const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [email, setEmail] = useState("")
+  const [emailError, setEmailError] = useState<string | null>(null)
+
+  // Initialize email on mount
+  useEffect(() => {
+    if (profile?.email) {
+      setEmail(profile.email)
+    } else {
+      const stored = localStorage.getItem("muse-checkout-email")
+      if (stored) {
+        setEmail(stored)
+      }
+    }
+  }, [profile])
+
+  const validateEmail = (emailStr: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(emailStr)
+  }
+
+  const handleEmailChange = (val: string) => {
+    setEmail(val)
+    if (emailError) {
+      if (val.trim() === "") {
+        setEmailError("Please enter your email to proceed to checkout")
+      } else if (!validateEmail(val)) {
+        setEmailError("Please enter a valid email address")
+      } else {
+        setEmailError(null)
+      }
+    }
+    localStorage.setItem("muse-checkout-email", val)
+  }
 
   const handleCheckout = async () => {
     if (!cart || cart.items.length === 0) return
 
+    if (!email || email.trim() === "") {
+      setEmailError("Please enter your email to proceed to checkout")
+      return
+    }
+
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address")
+      return
+    }
+
+    setEmailError(null)
     setIsCheckingOut(true)
 
     try {
-      console.log("🛒 Initiating checkout...")
+      console.log("🛒 Initiating checkout for email:", email.trim())
       
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: cart.items })
+        body: JSON.stringify({ 
+          items: cart.items,
+          email: email.trim()
+        })
       })
 
       if (!response.ok) {
@@ -181,6 +229,39 @@ export function CartView() {
               <span className="font-heading text-2xl tracking-tight text-foreground">
                 {formatPrice(totalPrice)}
               </span>
+            </div>
+
+            {/* Contact Email Field */}
+            <div className="mt-6 border-t border-border pt-4">
+              <label htmlFor="checkout-email" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Contact Information
+              </label>
+              <p className="mt-1 text-xs text-muted-foreground">
+                We'll send order confirmation and shipping updates to this email address.
+              </p>
+              <div className="mt-2.5 relative">
+                <input
+                  id="checkout-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder="your-email@example.com"
+                  className={`w-full rounded-md border bg-background px-3 py-2 text-sm transition-all duration-200 focus:outline-none focus:ring-2 ${
+                    emailError
+                      ? "border-destructive text-destructive placeholder-destructive/40 focus:ring-destructive/10"
+                      : "border-input text-foreground placeholder-muted-foreground focus:border-accent/50 focus:ring-accent/20"
+                  }`}
+                />
+                {emailError && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-1 text-xs text-destructive font-medium"
+                  >
+                    {emailError}
+                  </motion.p>
+                )}
+              </div>
             </div>
 
             <Button

@@ -19,31 +19,58 @@ import { GALLERY_ITEMS } from "@/lib/mock-data"
 
 export function ProductConfigurator({ imageId }: { imageId: string }) {
   const router = useRouter()
-  const { selectedImage, currentImages } = useGeneration()
+  const { selectedImage, currentImages, generationHistory } = useGeneration()
   const { addItem } = useCart()
   const { profile } = useStyleProfile()
 
-  // Find the image from generation context or fall back to gallery
-  const image = selectedImage
-    ?? currentImages.find((img) => img.id === imageId)
-    ?? (() => {
-      const galleryItem = GALLERY_ITEMS.find((g) => g.id === imageId)
-      return galleryItem ? { id: galleryItem.id, url: galleryItem.url, prompt: galleryItem.prompt, width: 1024, height: 1024 } : null
-    })()
+  // Find the image from generation context, history, or fall back to gallery
+  const image = useMemo(() => {
+    // 1. Search in current session's generated images matching the route imageId
+    const generatedMatch = currentImages.find((img) => img.id === imageId)
+    if (generatedMatch) return generatedMatch
+
+    // 2. Search in pre-defined gallery items matching the route imageId
+    const galleryMatch = GALLERY_ITEMS.find((g) => g.id === imageId)
+    if (galleryMatch) {
+      return {
+        id: galleryMatch.id,
+        url: galleryMatch.url,
+        prompt: galleryMatch.prompt,
+        width: 1024,
+        height: 1024,
+      }
+    }
+
+    // 3. Search in generation history
+    if (generationHistory) {
+      for (const batch of generationHistory) {
+        const match = batch.find((img) => img.id === imageId)
+        if (match) return match
+      }
+    }
+
+    // 4. Fall back to selectedImage if its ID matches the route imageId
+    if (selectedImage && selectedImage.id === imageId) {
+      return selectedImage
+    }
+
+    // 5. If all else fails and selectedImage exists, use it as a last resort fallback
+    return selectedImage || null
+  }, [currentImages, imageId, selectedImage, generationHistory])
 
   const [size, setSize] = useState("16x20")
   const [medium, setMedium] = useState("paper")
-  const [frame, setFrame] = useState("none")
+  const [frame, setFrame] = useState<string | null>(null)
   const [mat, setMat] = useState("none")
 
-  const totalPrice = useMemo(() => calculatePrice(size, medium, frame, mat), [size, medium, frame, mat])
+  const totalPrice = useMemo(() => calculatePrice(size, medium, frame || "none", mat), [size, medium, frame, mat])
   const resolution = useMemo(
     () => image ? validateResolution(image.width, image.height, size) : null,
     [image, size]
   )
 
   const handleAddToCart = useCallback(() => {
-    if (!image) return
+    if (!image || frame === null) return
     
     // Get Shopify variant ID for this configuration
     const shopifyVariantId = getShopifyVariantId(size, medium, frame)
@@ -179,7 +206,14 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
 
             {/* Frame Selection */}
             <div>
-              <p className="mb-3 text-xs uppercase tracking-[0.15em] text-muted-foreground">Frame</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs uppercase tracking-[0.15em] text-muted-foreground">Frame</p>
+                {frame === null && (
+                  <span className="text-[10px] font-medium text-rose-500 animate-pulse bg-rose-50 px-2 py-0.5 rounded-full">
+                    Selection Required
+                  </span>
+                )}
+              </div>
               <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
                 {FRAMES.map((f) => (
                   <button
@@ -207,7 +241,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
             </div>
 
             {/* Mat Selection (only if frame selected) */}
-            {frame !== "none" && (
+            {frame !== "none" && frame !== null && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -242,8 +276,8 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
               <div className="mt-2 text-xs text-muted-foreground">
                 {SIZES.find((s) => s.id === size)?.label} &middot;{" "}
                 {MEDIUMS.find((m) => m.id === medium)?.label} &middot;{" "}
-                {FRAMES.find((f) => f.id === frame)?.label}
-                {mat !== "none" ? ` \u00b7 ${MATS.find((m) => m.id === mat)?.label}` : ""}
+                {frame === null ? "No Frame Selected" : FRAMES.find((f) => f.id === frame)?.label}
+                {frame !== null && frame !== "none" && mat !== "none" ? ` \u00b7 ${MATS.find((m) => m.id === mat)?.label}` : ""}
               </div>
               <div className="mt-3 flex items-center gap-1.5 text-xs text-muse-taupe">
                 <Truck className="h-3.5 w-3.5" />
@@ -255,11 +289,15 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
             <Button
               onClick={handleAddToCart}
               size="lg"
-              variant="default"
-              className="w-full"
+              variant={frame === null ? "outline" : "default"}
+              className={cn(
+                "w-full transition-all duration-300",
+                frame === null ? "border-rose-200 text-rose-500 hover:bg-rose-50/20" : ""
+              )}
+              disabled={frame === null}
             >
               <ShoppingBag className="mr-2 h-4 w-4" />
-              Add to Cart &mdash; {formatPrice(totalPrice)}
+              {frame === null ? "Please Select a Frame Option" : `Add to Cart — ${formatPrice(totalPrice)}`}
             </Button>
           </motion.div>
         </div>

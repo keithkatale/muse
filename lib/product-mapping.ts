@@ -53,7 +53,7 @@ export function getShopifyVariantId(size: string, medium: string, frame: string)
  */
 export function isProductMappingConfigured(): boolean {
   const firstVariant = Object.values(PRODUCT_VARIANTS)[0]
-  return firstVariant && !firstVariant.includes("REPLACE_WITH_YOUR_ID")
+  return !!(firstVariant && !firstVariant.includes("REPLACE_WITH_YOUR_ID"))
 }
 
 /**
