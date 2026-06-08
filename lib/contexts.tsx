@@ -145,6 +145,58 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
   const [isGenerating, setIsGenerating] = useState(false)
   const [aspectRatio, setAspectRatio] = useState("3:4")
   const [quality, setQuality] = useState<"standard" | "premium">("standard")
+  const [loaded, setLoaded] = useState(false)
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedPrompt = localStorage.getItem("muse-prompt")
+      if (storedPrompt) setPrompt(storedPrompt)
+
+      const storedEnhanced = localStorage.getItem("muse-enhanced-prompt")
+      if (storedEnhanced) setEnhancedPrompt(storedEnhanced)
+
+      const storedCurrent = localStorage.getItem("muse-current-images")
+      if (storedCurrent) setCurrentImages(JSON.parse(storedCurrent))
+
+      const storedSelected = localStorage.getItem("muse-selected-image")
+      if (storedSelected && storedSelected !== "undefined") {
+        setSelectedImage(JSON.parse(storedSelected))
+      }
+
+      const storedHistory = localStorage.getItem("muse-generation-history")
+      if (storedHistory) setGenerationHistory(JSON.parse(storedHistory))
+
+      const storedModifiers = localStorage.getItem("muse-active-modifiers")
+      if (storedModifiers) setActiveModifiers(JSON.parse(storedModifiers))
+
+      const storedRatio = localStorage.getItem("muse-aspect-ratio")
+      if (storedRatio) setAspectRatio(storedRatio)
+
+      const storedQuality = localStorage.getItem("muse-quality")
+      if (storedQuality) setQuality(storedQuality as "standard" | "premium")
+    } catch (e) {
+      console.error("Failed to load generation state from localStorage:", e)
+    }
+    setLoaded(true)
+  }, [])
+
+  // Sync state to localStorage when values change
+  useEffect(() => {
+    if (!loaded) return
+    try {
+      localStorage.setItem("muse-prompt", prompt)
+      localStorage.setItem("muse-enhanced-prompt", enhancedPrompt)
+      localStorage.setItem("muse-current-images", JSON.stringify(currentImages))
+      localStorage.setItem("muse-selected-image", selectedImage ? JSON.stringify(selectedImage) : "")
+      localStorage.setItem("muse-generation-history", JSON.stringify(generationHistory))
+      localStorage.setItem("muse-active-modifiers", JSON.stringify(activeModifiers))
+      localStorage.setItem("muse-aspect-ratio", aspectRatio)
+      localStorage.setItem("muse-quality", quality)
+    } catch (e) {
+      console.error("Failed to save generation state to localStorage:", e)
+    }
+  }, [loaded, prompt, enhancedPrompt, currentImages, selectedImage, generationHistory, activeModifiers, aspectRatio, quality])
 
   const addToHistory = useCallback((images: GeneratedImage[]) => {
     setGenerationHistory((prev) => [...prev, images])
@@ -157,7 +209,19 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
     setSelectedImage(null)
     setGenerationHistory([])
     setActiveModifiers([])
+    try {
+      localStorage.removeItem("muse-prompt")
+      localStorage.removeItem("muse-enhanced-prompt")
+      localStorage.removeItem("muse-current-images")
+      localStorage.removeItem("muse-selected-image")
+      localStorage.removeItem("muse-generation-history")
+      localStorage.removeItem("muse-active-modifiers")
+    } catch {
+      // ignore
+    }
   }, [])
+
+  if (!loaded) return null
 
   return (
     <GenerationContext.Provider

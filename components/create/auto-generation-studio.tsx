@@ -13,6 +13,7 @@ export function AutoGenerationStudio() {
   const router = useRouter()
   const { profile, isQuizComplete } = useStyleProfile()
   const {
+    currentImages,
     setEnhancedPrompt,
     setCurrentImages, 
     addToHistory,
@@ -119,12 +120,12 @@ export function AutoGenerationStudio() {
     }
   }, [profile, isQuizComplete, isGenerating, setIsGenerating, setSelectedImage, setCurrentImages, aspectRatio, setEnhancedPrompt, addToHistory, quality])
 
-  // Auto-generate on component mount
+  // Auto-generate on component mount (only if no images are already generated)
   useEffect(() => {
-    if (profile && isQuizComplete && !isGenerating) {
+    if (profile && isQuizComplete && !isGenerating && currentImages.length === 0) {
       generateFromProfile()
     }
-  }, [profile, isQuizComplete]) // Only run when profile is available
+  }, [profile, isQuizComplete, currentImages.length]) // Only run when profile is available and no images exist yet
 
   // Redirect if no profile
   useEffect(() => {
