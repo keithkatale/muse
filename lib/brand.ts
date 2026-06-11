@@ -6,17 +6,17 @@ export const brand = {
   brown: "#564738",
   floral: "#FEF8F2",
   taupe: "#947A5D",
-  selected: "#FDE2C4",
-  unselected: "#F2F2F2",
+  selected: "#FFE3C5",
+  unselected: "#F5F5F5",
 } as const
 
 /** Quiz / configurator card selection (States spec) */
 export function selectionCard(selected: boolean, className?: string) {
   return cn(
-    "border-2 transition-all duration-200",
+    "border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F6CDA1]/40 focus-visible:ring-offset-2",
     selected
-      ? "border-muse-peach bg-muse-selected text-foreground shadow-sm"
-      : "border-transparent bg-muse-unselected text-muted-foreground hover:border-muse-peach/50",
+      ? "border-[#947A5D] bg-[#FFE3C5] text-[#564738] shadow-sm font-medium"
+      : "border-[#E5E5E5] bg-[#F5F5F5] text-[#8E8E93] hover:border-[#947A5D]/40 hover:bg-[#FFE3C5]/20",
     className
   )
 }
@@ -24,21 +24,21 @@ export function selectionCard(selected: boolean, className?: string) {
 /** Configure page options — warm palette, visible borders */
 export function configuratorSelectionCard(selected: boolean, className?: string) {
   return cn(
-    "border-2 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-muse-peach/40 focus-visible:ring-offset-2",
+    "border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F6CDA1]/40 focus-visible:ring-offset-2",
     selected
-      ? "border-muse-peach bg-muse-selected text-[#564738] shadow-sm"
-      : "border-[#E8DDD4] bg-muse-floral text-[#947A5D] hover:border-muse-peach hover:bg-muse-selected/50",
+      ? "border-[#947A5D] bg-[#FFE3C5] text-[#564738] shadow-sm font-medium"
+      : "border-[#E5E5E5] bg-[#F5F5F5] text-[#8E8E93] hover:border-[#947A5D]/40 hover:bg-[#FFE3C5]/20",
     className
   )
 }
 
-/** Image grid selection — peach stroke outline */
+/** Image grid selection — peach stroke outline (3px solid #F6CDA1) */
 export function selectionImage(selected: boolean, className?: string) {
   return cn(
-    "border-2 transition-all duration-200",
+    "border-[3px] transition-all duration-200",
     selected
-      ? "border-muse-peach ring-2 ring-muse-peach/25"
-      : "border-transparent hover:border-muse-taupe/40",
+      ? "border-[#F6CDA1] ring-2 ring-[#F6CDA1]/25"
+      : "border-transparent hover:border-[#947A5D]/40",
     className
   )
 }
@@ -46,10 +46,10 @@ export function selectionImage(selected: boolean, className?: string) {
 /** Pill tag / chip selection */
 export function selectionPill(selected: boolean, className?: string) {
   return cn(
-    "rounded-full border-2 px-3 py-1.5 text-xs transition-all duration-200",
+    "rounded-full border px-3 py-1.5 text-xs transition-all duration-200",
     selected
-      ? "border-muse-peach bg-muse-selected text-foreground font-medium"
-      : "border-transparent bg-muse-unselected text-muted-foreground hover:border-muse-peach/40",
+      ? "border-[#947A5D] bg-[#FFE3C5] text-[#564738] font-medium"
+      : "border-[#E5E5E5] bg-[#F5F5F5] text-[#8E8E93] hover:border-[#947A5D]/40 hover:bg-[#FFE3C5]/20",
     className
   )
 }

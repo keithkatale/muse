@@ -75,26 +75,7 @@ export function EmailStep({ email, onEmailChange }: EmailStepProps) {
           </div>
         </div>
 
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
-          <div className="flex flex-col items-center p-4 rounded-lg bg-muted/30">
-            <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center mb-2">
-              <span className="text-accent font-semibold">1</span>
-            </div>
-            <p className="text-muted-foreground">Personalized recommendations</p>
-          </div>
-          <div className="flex flex-col items-center p-4 rounded-lg bg-muted/30">
-            <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center mb-2">
-              <span className="text-accent font-semibold">2</span>
-            </div>
-            <p className="text-muted-foreground">Save your preferences</p>
-          </div>
-          <div className="flex flex-col items-center p-4 rounded-lg bg-muted/30">
-            <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center mb-2">
-              <span className="text-accent font-semibold">3</span>
-            </div>
-            <p className="text-muted-foreground">Track your creations</p>
-          </div>
-        </div>
+
       </motion.div>
     </div>
   )
