@@ -83,7 +83,7 @@ export const PRODUCT_VARIANTS: ProductVariantMapping[] = (() => {
 export const GALLERY_ITEMS: GalleryItem[] = [
   {
     id: "gallery-1",
-    url: "/images/gallery/art-1.jpg",
+    url: "/images/gallery/updated gallery mockup 1.jpg",
     title: "Golden Hour Abstraction",
     style: "abstract",
     subject: "landscapes",
@@ -92,7 +92,7 @@ export const GALLERY_ITEMS: GalleryItem[] = [
   },
   {
     id: "gallery-2",
-    url: "/images/gallery/art-2.jpg",
+    url: "/images/gallery/updated gallery mockup 2.jpg",
     title: "Calm Waters",
     style: "illustrated",
     subject: "landscapes",

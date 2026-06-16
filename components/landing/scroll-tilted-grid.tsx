@@ -14,8 +14,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
  * Curated art collection from the Muse platform
  */
 export const MUSE_GALLERY_IMAGES: readonly string[] = [
-  "/images/gallery/art-1.jpg",
-  "/images/gallery/art-2.jpg",
+  "/images/gallery/updated gallery mockup 1.jpg",
+  "/images/gallery/updated gallery mockup 2.jpg",
   "/images/gallery/art-3.jpg",
   "/images/gallery/art-4.jpg",
   "/images/gallery/art-5.jpg",
