@@ -132,7 +132,7 @@ export function StyleQuiz() {
               <PaletteStep
                 selected={palettes}
                 onSelect={setPalettes}
-                maxSelections={2}
+                maxSelections={1}
               />
             )}
             {step === 2 && (

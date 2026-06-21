@@ -18,6 +18,8 @@ export function PaletteStep({
   const toggle = (id: PaletteOption) => {
     if (selected.includes(id)) {
       onSelect(selected.filter((s) => s !== id))
+    } else if (maxSelections === 1) {
+      onSelect([id])
     } else if (selected.length < maxSelections) {
       onSelect([...selected, id])
     }
@@ -35,7 +37,9 @@ export function PaletteStep({
           Which color palettes speak to you?
         </h2>
         <p className="text-muted-foreground text-lg">
-          Pick up to {maxSelections} palettes to personalize your art creation
+          {maxSelections === 1
+            ? "Pick a palette to personalize your art creation"
+            : `Pick up to ${maxSelections} palettes to personalize your art creation`}
         </p>
         <div className="mt-4 flex justify-center">
           {selected.length === 0 ? (
