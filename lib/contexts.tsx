@@ -1,8 +1,30 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react"
-import type { StyleProfile, GeneratedImage, CartItem, Cart } from "@/lib/types"
+import type { StyleProfile, GeneratedImage, CartItem, Cart, RoomOption, GenerationBatch } from "@/lib/types"
 import { calculatePrice } from "@/lib/mock-data"
+
+const LEGACY_ROOM_MAP: Record<string, RoomOption> = {
+  "wall-1": "sitting-room",
+  "wall-2": "sitting-room",
+  "wall-3": "studio",
+  "wall-4": "bedroom",
+  "wall-5": "office",
+  "wall-6": "hallway",
+  "wall-7": "sitting-room",
+  "wall-8": "office",
+  "wall-9": "studio",
+  "wall-10": "sitting-room",
+  "wall-11": "dining",
+  "wall-12": "office",
+}
+
+function migrateRoom(room: unknown): RoomOption | null {
+  if (!room || typeof room !== "string") return null
+  if (room in LEGACY_ROOM_MAP) return LEGACY_ROOM_MAP[room]
+  const valid: RoomOption[] = ["bedroom", "sitting-room", "studio", "dining", "office", "hallway"]
+  return valid.includes(room as RoomOption) ? (room as RoomOption) : null
+}
 
 // ── Style Profile Context ──
 interface StyleProfileContextType {
@@ -45,7 +67,7 @@ export function StyleProfileProvider({ children }: { children: React.ReactNode }
           styles: parsedProfile.styles || [],
           subjects: parsedProfile.subjects || [],
           mood: parsedProfile.mood || null,
-          room: parsedProfile.room || null,
+          room: migrateRoom(parsedProfile.room),
           orientation: parsedProfile.orientation || null,
         }
         setProfileState(migratedProfile)
@@ -106,8 +128,11 @@ interface GenerationContextType {
   setCurrentImages: (images: GeneratedImage[]) => void
   selectedImage: GeneratedImage | null
   setSelectedImage: (image: GeneratedImage | null) => void
-  generationHistory: GeneratedImage[][]
-  addToHistory: (images: GeneratedImage[]) => void
+  generationHistory: GenerationBatch[]
+  addToHistory: (
+    images: GeneratedImage[],
+    meta?: { aspectRatio: string; quality: "standard" | "premium" }
+  ) => void
   activeModifiers: string[]
   setActiveModifiers: (modifiers: string[]) => void
   isGenerating: boolean
@@ -146,7 +171,7 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
   const [enhancedPrompt, setEnhancedPrompt] = useState("")
   const [currentImages, setCurrentImages] = useState<GeneratedImage[]>([])
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null)
-  const [generationHistory, setGenerationHistory] = useState<GeneratedImage[][]>([])
+  const [generationHistory, setGenerationHistory] = useState<GenerationBatch[]>([])
   const [activeModifiers, setActiveModifiers] = useState<string[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [aspectRatio, setAspectRatio] = useState("3:4")
@@ -171,7 +196,24 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
       }
 
       const storedHistory = localStorage.getItem("muse-generation-history")
-      if (storedHistory) setGenerationHistory(JSON.parse(storedHistory))
+      if (storedHistory) {
+        const parsed = JSON.parse(storedHistory)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed[0])) {
+            setGenerationHistory(
+              (parsed as GeneratedImage[][]).map((images, i) => ({
+                id: `legacy-${i}`,
+                createdAt: Date.now() - (parsed.length - i) * 86_400_000,
+                aspectRatio: "3:4",
+                quality: "standard" as const,
+                images,
+              }))
+            )
+          } else {
+            setGenerationHistory(parsed as GenerationBatch[])
+          }
+        }
+      }
 
       const storedModifiers = localStorage.getItem("muse-active-modifiers")
       if (storedModifiers) setActiveModifiers(JSON.parse(storedModifiers))
@@ -204,9 +246,24 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
     }
   }, [loaded, prompt, enhancedPrompt, currentImages, selectedImage, generationHistory, activeModifiers, aspectRatio, quality])
 
-  const addToHistory = useCallback((images: GeneratedImage[]) => {
-    setGenerationHistory((prev) => [...prev, images])
-  }, [])
+  const addToHistory = useCallback(
+    (
+      images: GeneratedImage[],
+      meta?: { aspectRatio: string; quality: "standard" | "premium" }
+    ) => {
+      setGenerationHistory((prev) => [
+        ...prev,
+        {
+          id: `gen-${Date.now()}`,
+          createdAt: Date.now(),
+          aspectRatio: meta?.aspectRatio ?? aspectRatio,
+          quality: meta?.quality ?? quality,
+          images,
+        },
+      ])
+    },
+    [aspectRatio, quality]
+  )
 
   const clearSession = useCallback(() => {
     setPrompt("")

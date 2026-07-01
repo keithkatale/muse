@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useStyleProfile } from "@/lib/contexts"
+import { STYLE_OPTIONS, SUBJECT_OPTIONS } from "@/lib/mock-data"
 import type { StyleProfile, PaletteOption, StyleOption, SubjectOption, MoodOption, RoomOption, OrientationOption } from "@/lib/types"
 import { EmailStep } from "./steps/email-step"
 import { PaletteStep } from "./steps/palette-step"
@@ -28,6 +29,19 @@ export function StyleQuiz() {
   const [mood, setMood] = useState<MoodOption | null>(null)
   const [room, setRoom] = useState<RoomOption | null>(null)
   const [orientation, setOrientation] = useState<OrientationOption | null>(null)
+
+  // Preload images for the next image-heavy step while the user is still on the prior step
+  useEffect(() => {
+    const preload = (src: string) => {
+      const img = new Image()
+      img.src = src
+    }
+    if (step === 1) {
+      STYLE_OPTIONS.forEach(({ image }) => preload(image))
+    } else if (step === 2) {
+      SUBJECT_OPTIONS.forEach(({ image }) => preload(image))
+    }
+  }, [step])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -114,13 +128,13 @@ export function StyleQuiz() {
 
       {/* Step Content */}
       <div className="flex-1">
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false}>
           <motion.div
             key={step}
-            initial={{ opacity: 0, x: 40 }}
+            initial={{ opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.3 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
           >
             {step === 0 && (
               <EmailStep
@@ -139,14 +153,14 @@ export function StyleQuiz() {
               <StyleStep
                 selected={styles}
                 onSelect={setStyles}
-                maxSelections={2}
+                maxSelections={1}
               />
             )}
             {step === 3 && (
               <SubjectStep
                 selected={subjects}
                 onSelect={setSubjects}
-                maxSelections={3}
+                maxSelections={1}
               />
             )}
             {step === 4 && (

@@ -19,113 +19,59 @@ interface RoomConfig {
 }
 
 const ROOM_CONFIGS: Record<string, RoomConfig> = {
-  "wall-1": {
-    id: "wall-1",
-    label: "Warm Scandinavian Studio",
-    image: "/images/rooms/wall-1.jpg",
-    left: "15.0%",
-    top: "7.7%",
-    width: "42.5%",
-    height: "65.4%",
+  bedroom: {
+    id: "bedroom",
+    label: "Bedroom",
+    image: "/images/rooms/bedroom.jpg",
+    left: "12.5%",
+    top: "23.1%",
+    width: "20.0%",
+    height: "23.1%",
   },
-  "wall-2": {
-    id: "wall-2",
-    label: "Minimalist Living Room",
-    image: "/images/rooms/wall-2.jpg",
+  "sitting-room": {
+    id: "sitting-room",
+    label: "Sitting Room",
+    image: "/images/rooms/living-room.jpg",
     left: "50.0%",
     top: "6.7%",
     width: "45.0%",
     height: "80.0%",
   },
-  "wall-3": {
-    id: "wall-3",
-    label: "Modern Studio Wall",
+  studio: {
+    id: "studio",
+    label: "Studio",
     image: "/images/rooms/wall-3.jpg",
     left: "5.0%",
     top: "9.5%",
     width: "52.5%",
     height: "76.2%",
   },
-  "wall-4": {
-    id: "wall-4",
-    label: "Boho Bedroom",
-    image: "/images/rooms/wall-4.jpg",
-    left: "12.5%",
-    top: "23.1%",
-    width: "20.0%",
-    height: "23.1%",
-  },
-  "wall-5": {
-    id: "wall-5",
-    label: "Earthy Workspace",
-    image: "/images/rooms/wall-5.jpg",
-    left: "27.5%",
-    top: "15.4%",
-    width: "30.0%",
-    height: "34.6%",
-  },
-  "wall-6": {
-    id: "wall-6",
-    label: "Minimalist Gallery",
-    image: "/images/rooms/wall-6.jpg",
-    left: "15.0%",
-    top: "9.1%",
-    width: "40.0%",
-    height: "54.5%",
-  },
-  "wall-7": {
-    id: "wall-7",
-    label: "Luxury Parlor",
-    image: "/images/rooms/wall-7.jpg",
-    left: "70.0%",
-    top: "13.6%",
-    width: "25.0%",
-    height: "59.1%",
-  },
-  "wall-8": {
-    id: "wall-8",
-    label: "Executive Lounge",
-    image: "/images/rooms/wall-8.jpg",
-    left: "45.0%",
-    top: "18.2%",
-    width: "30.0%",
-    height: "40.9%",
-  },
-  "wall-9": {
-    id: "wall-9",
-    label: "Creative Corner",
-    image: "/images/rooms/wall-9.jpg",
-    left: "50.0%",
-    top: "7.4%",
-    width: "40.0%",
-    height: "44.4%",
-  },
-  "wall-10": {
-    id: "wall-10",
-    label: "Contemporary Lounge",
-    image: "/images/rooms/wall-10.jpg",
-    left: "17.5%",
-    top: "16.7%",
-    width: "35.0%",
-    height: "46.7%",
-  },
-  "wall-11": {
-    id: "wall-11",
-    label: "Bright Atelier",
-    image: "/images/rooms/wall-11.jpg",
+  dining: {
+    id: "dining",
+    label: "Dining",
+    image: "/images/rooms/dining.jpg",
     left: "22.5%",
     top: "6.7%",
     width: "57.5%",
     height: "56.7%",
   },
-  "wall-12": {
-    id: "wall-12",
-    label: "Stylish Workspace",
-    image: "/images/rooms/wall-12.jpg",
-    left: "55.0%",
-    top: "30.0%",
+  office: {
+    id: "office",
+    label: "Office",
+    image: "/images/rooms/office.jpg",
+    left: "27.5%",
+    top: "15.4%",
+    width: "30.0%",
+    height: "34.6%",
+  },
+  hallway: {
+    id: "hallway",
+    label: "Hallway",
+    image: "/images/rooms/hallway.jpg",
+    left: "15.0%",
+    top: "9.1%",
     width: "40.0%",
-    height: "40.0%",
+    height: "54.5%",
   },
 }
 
@@ -213,11 +159,11 @@ export function ArtPreview({
     if (initialRoom && initialRoom in ROOM_CONFIGS) {
       return initialRoom
     }
-    return "wall-1"
+    return "bedroom"
   })
   
   const frameData = frame ? FRAMES.find((f) => f.id === frame) : undefined
-  const roomConfig = ROOM_CONFIGS[selectedRoom] || ROOM_CONFIGS["wall-1"]
+  const roomConfig = ROOM_CONFIGS[selectedRoom] || ROOM_CONFIGS["bedroom"]
   const roomImage = roomConfig.image
 
   const hasFrame = frame !== "none" && frame !== null
@@ -335,7 +281,7 @@ export function ArtPreview({
                       sizes="(max-width: 1024px) 100vw, 60vw"
                       className="object-cover"
                       loading="lazy"
-                      priority={room.id === "wall-1"}
+                      priority={room.id === "bedroom"}
                     />
                   </div>
                 ))}

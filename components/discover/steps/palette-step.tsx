@@ -102,18 +102,12 @@ export function PaletteStep({
                   Unselected
                 </div>
               ) : isSelected ? (
-                <motion.div
-                  layoutId={`palette-selection-${palette.id}`}
-                  className="absolute top-4 right-4 rounded-full bg-muse-peach px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-[#564738] flex items-center gap-1 shadow-sm"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div className="absolute top-4 right-4 rounded-full bg-muse-peach px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-[#564738] flex items-center gap-1 shadow-sm">
                   <svg className="h-3 w-3 text-[#564738]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                   Selected
-                </motion.div>
+                </div>
               ) : null}
 
               {/* Hover Overlay */}

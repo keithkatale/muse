@@ -1,314 +1,159 @@
 "use client"
 
-import { useCallback } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { Check, ArrowRight, RotateCcw, ImageIcon, Loader2 } from "lucide-react"
+import { ImageIcon, Loader2, ArrowRight, ZoomIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGeneration } from "@/lib/contexts"
-import { selectionImage, selectionPill } from "@/lib/brand"
-import { cn } from "@/lib/utils"
-import type { GenerateResponse } from "@/lib/types"
+import { selectionImage } from "@/lib/brand"
+import { aspectRatioClass, cn } from "@/lib/utils"
+import type { GeneratedImage } from "@/lib/types"
+import { ImageLightbox } from "./image-lightbox"
 
-const DIRECTION_TAGS = [
-  { id: "warmer", label: "Warmer", modifier: "with warmer golden tones" },
-  { id: "cooler", label: "Cooler", modifier: "with cooler blue tones" },
-  { id: "more-dramatic", label: "More Dramatic", modifier: "with more dramatic contrast and lighting" },
-  { id: "more-subtle", label: "More Subtle", modifier: "with softer, more subtle tones" },
-  { id: "more-detailed", label: "More Detailed", modifier: "with more intricate detail and texture" },
-  { id: "more-abstract", label: "More Abstract", modifier: "in a more abstract, less literal style" },
-  { id: "brighter", label: "Brighter", modifier: "with brighter, more luminous lighting" },
-  { id: "darker", label: "Darker", modifier: "with deeper, moodier shadows" },
-]
+function tileAspectRatio(img: GeneratedImage | null, fallback: string): string {
+  if (img?.width && img?.height) return `${img.width} / ${img.height}`
+  const map: Record<string, string> = {
+    "3:4": "3 / 4",
+    "4:3": "4 / 3",
+    "1:1": "1 / 1",
+    "16:9": "16 / 9",
+  }
+  return map[fallback] ?? "3 / 4"
+}
 
 export function ResultsPanel() {
   const router = useRouter()
   const {
     currentImages,
-    selectedImage, setSelectedImage,
-    isGenerating, setIsGenerating,
-    activeModifiers, setActiveModifiers,
-    enhancedPrompt,
-    setCurrentImages, addToHistory,
+    selectedImage,
+    setSelectedImage,
+    isGenerating,
     aspectRatio,
-    quality,
-    generationHistory,
   } = useGeneration()
 
-  const handleRefine = useCallback(
-    async (modifier?: string) => {
-      if (isGenerating) return
-      setIsGenerating(true)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const skeletonAspect = aspectRatioClass(aspectRatio)
 
-      const modifiers = modifier
-        ? [...activeModifiers, modifier]
-        : activeModifiers
-
-      if (modifier) setActiveModifiers(modifiers)
-
-      const refinedPrompt = [
-        enhancedPrompt,
-        ...modifiers.map(
-          (m) => DIRECTION_TAGS.find((t) => t.id === m)?.modifier || ""
-        ),
-      ]
-        .filter(Boolean)
-        .join(". ")
-
-      try {
-        const genRes = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            enhancedPrompt: refinedPrompt,
-            aspectRatio,
-            count: 4,
-            quality,
-          }),
-        })
-
-        if (!genRes.body) {
-          throw new Error("No response body")
-        }
-
-        // Read the streaming response
-        const reader = genRes.body.getReader()
-        const decoder = new TextDecoder()
-        let buffer = ''
-        const allImages: any[] = []
-
-        // Clear existing images
-        setCurrentImages([])
-        setSelectedImage(null)
-
-        while (true) {
-          const { done, value } = await reader.read()
-          
-          if (done) break
-          
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          
-          // Process all complete lines
-          for (let i = 0; i < lines.length - 1; i++) {
-            const line = lines[i].trim()
-            if (line) {
-              try {
-                const image = JSON.parse(line)
-                allImages.push(image)
-                // Update UI immediately with new image
-                setCurrentImages([...allImages])
-              } catch (e) {
-                console.error("Failed to parse image:", e)
-              }
-            }
-          }
-          
-          // Keep the last incomplete line in the buffer
-          buffer = lines[lines.length - 1]
-        }
-
-        // Add to history once all images are loaded
-        if (allImages.length > 0) {
-          addToHistory(allImages)
-        }
-      } catch (error) {
-        console.error("Refinement failed:", error)
-      } finally {
-        setIsGenerating(false)
-      }
-    },
-    [isGenerating, setIsGenerating, activeModifiers, setActiveModifiers, enhancedPrompt, aspectRatio, quality, setCurrentImages, addToHistory, setSelectedImage]
-  )
-
-  const handleContinue = useCallback(() => {
-    if (!selectedImage) return
-    router.push(`/configure/${selectedImage.id}`)
-  }, [selectedImage, router])
-
-  // Empty state
   if (currentImages.length === 0 && !isGenerating) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card/50 py-24"
-      >
-        <ImageIcon className="mb-4 h-12 w-12 text-muted-foreground/40" />
-        <p className="font-heading text-xl text-foreground">Your art will appear here</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Describe what you imagine or pick a starting concept
-        </p>
-      </motion.div>
+      <div className="flex h-full w-full items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center text-center"
+        >
+          <ImageIcon className="mb-3 h-10 w-10 text-muted-foreground/40" />
+          <p className="font-heading text-lg text-foreground">Your art will appear here</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Describe what you imagine, then generate
+          </p>
+        </motion.div>
+      </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Image Grid */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
-        <AnimatePresence mode="wait">
-          {isGenerating
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <motion.div
-                  key={`skeleton-${i}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: i * 0.1, duration: 0.3 }}
-                  className="aspect-[3/4] overflow-hidden rounded-lg bg-muted/50 border-2 border-dashed border-border/50 flex items-center justify-center"
-                >
-                  <div className="flex flex-col items-center gap-3">
-                    <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
-                    <div className="text-xs text-muted-foreground font-medium">
-                      Generating...
-                    </div>
-                  </div>
-                </motion.div>
-              ))
-            : currentImages.map((img, i) => (
-                <motion.button
-                  key={img.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  onClick={() =>
-                    setSelectedImage(
-                      selectedImage?.id === img.id ? null : img
-                    )
-                  }
-                  className={cn(
-                    "group relative aspect-[3/4] overflow-hidden rounded-lg",
-                    selectionImage(selectedImage?.id === img.id)
-                  )}
-                >
-                  <Image
-                    src={img.url}
-                    alt={`Generated variant ${i + 1}`}
-                    fill
-                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                    className="object-cover"
-                    unoptimized
-                  />
-                  {selectedImage?.id === img.id && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-muse-peach"
-                    >
-                      <Check className="h-3.5 w-3.5 text-muse-brown" />
-                    </motion.div>
-                  )}
-                </motion.button>
-              ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Refinement Controls */}
-      {currentImages.length > 0 && !isGenerating && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="flex flex-col gap-4"
-        >
-          <div>
-            <p className="mb-3 text-xs uppercase tracking-[0.15em] text-muted-foreground">
-              Refine Direction
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {DIRECTION_TAGS.map((tag) => {
-                const isSelected = activeModifiers.includes(tag.id)
-                return (
-                  <button
-                    key={tag.id}
-                    onClick={() => handleRefine(tag.id)}
+    <>
+      <div className="flex h-full w-full items-center justify-center px-2 sm:px-3">
+        <div className="flex h-[82%] max-h-[82%] items-center justify-center gap-1.5 sm:gap-2">
+          <AnimatePresence mode="wait">
+            {isGenerating
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <motion.div
+                    key={`skeleton-${i}`}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ delay: i * 0.06, duration: 0.2 }}
+                    style={{ aspectRatio: tileAspectRatio(null, aspectRatio) }}
                     className={cn(
-                      "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-all duration-200 border",
-                      isSelected
-                        ? "border-muse-peach bg-muse-selected text-foreground font-semibold shadow-sm"
-                        : "border-dashed border-muse-taupe/40 bg-[#FAF6F0] text-muted-foreground hover:border-muse-peach/60 hover:bg-muse-selected/10"
+                      skeletonAspect,
+                      "relative flex h-full w-auto shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-border/40 bg-muted/40"
                     )}
                   >
-                    {isSelected ? (
-                      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-muse-peach text-[#564738] font-bold text-[9px]">
-                        ✓
-                      </span>
-                    ) : (
-                      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-dashed border-muse-taupe/40 text-muse-taupe text-xs font-semibold">
-                        +
-                      </span>
-                    )}
-                    <span>{tag.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <Button
-              onClick={() => {
-                setActiveModifiers([])
-                handleRefine()
-              }}
-              variant="outline"
-              size="sm"
-            >
-              <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Try Different Composition</span>
-              <span className="sm:hidden">Try Different</span>
-            </Button>
-
-            <Button
-              onClick={handleContinue}
-              disabled={!selectedImage}
-              size="sm"
-              className="sm:ml-auto"
-            >
-              <span className="hidden sm:inline">Continue to Print Options</span>
-              <span className="sm:hidden">Continue</span>
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-            </Button>
-          </div>
-
-          {/* Generation History */}
-          {generationHistory.length > 1 && (
-            <div>
-              <p className="mb-2 text-xs uppercase tracking-[0.15em] text-muted-foreground">
-                History ({generationHistory.length} generations)
-              </p>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {generationHistory.map((batch, batchIdx) => (
-                  <button
-                    key={batchIdx}
-                    onClick={() => {
-                      setCurrentImages(batch)
-                      setSelectedImage(null)
-                    }}
-                    className="flex shrink-0 gap-1 rounded-md border border-border bg-card p-1.5 transition-all hover:border-accent/30"
-                  >
-                    {batch.slice(0, 2).map((img) => (
-                      <div key={img.id} className="relative h-8 w-8 overflow-hidden rounded-sm">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </motion.div>
+                ))
+              : currentImages.map((img, i) => {
+                  const isSelected = selectedImage?.id === img.id
+                  return (
+                    <motion.div
+                      key={img.id}
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: i * 0.06 }}
+                      style={{ aspectRatio: tileAspectRatio(img, aspectRatio) }}
+                      className={cn(
+                        "group relative h-full w-auto shrink-0 overflow-hidden rounded-md",
+                        selectionImage(isSelected)
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setSelectedImage(isSelected ? null : img)}
+                        className="relative h-full w-full"
+                      >
                         <Image
                           src={img.url}
-                          alt=""
+                          alt={`Generated variant ${i + 1}`}
                           fill
-                          sizes="32px"
-                          className="object-cover"
+                          sizes="25vw"
+                          className="object-contain"
                           unoptimized
                         />
-                      </div>
-                    ))}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </motion.div>
+                      </button>
+
+                      <button
+                        type="button"
+                        aria-label="Zoom in"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setLightboxIndex(i)
+                        }}
+                        className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-full bg-black/45 text-white opacity-80 shadow-md backdrop-blur-sm transition-opacity hover:bg-black/60 hover:opacity-100 sm:right-2 sm:top-2 sm:size-8"
+                      >
+                        <ZoomIn className="size-3.5 sm:size-4" />
+                      </button>
+
+                      {isSelected && (
+                        <>
+                          <div className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-muse-peach/40" />
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="absolute inset-x-0 bottom-0 flex justify-center pb-3 sm:pb-4"
+                          >
+                            <Button
+                              size="sm"
+                              className="rounded-full bg-muse-peach px-5 text-muse-brown shadow-lg hover:bg-muse-selected"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                router.push(`/configure/${img.id}`)
+                              }}
+                            >
+                              Continue
+                              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                            </Button>
+                          </motion.div>
+                        </>
+                      )}
+                    </motion.div>
+                  )
+                })}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {lightboxIndex !== null && currentImages.length > 0 && (
+        <ImageLightbox
+          images={currentImages}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
       )}
-    </div>
+    </>
   )
 }

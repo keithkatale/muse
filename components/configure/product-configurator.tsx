@@ -44,7 +44,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
     // 3. Search in generation history
     if (generationHistory) {
       for (const batch of generationHistory) {
-        const match = batch.find((img) => img.id === imageId)
+        const match = batch.images.find((img) => img.id === imageId)
         if (match) return match
       }
     }
@@ -136,7 +136,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
             <ArtPreview
               imageUrl={image.url}
               frame={frame}
-              room={profile?.room || "wall-1"}
+              room={profile?.room || "bedroom"}
               size={size}
               mat={mat}
             />

@@ -48,7 +48,7 @@ export function PromptPanel() {
           styles: ["realistic"],
           subjects: ["landscapes"],
           mood: "calm",
-          room: "wall-1",
+          room: "bedroom",
         }
 
       const enhanceRes = await fetch("/api/enhance-prompt", {
@@ -114,7 +114,7 @@ export function PromptPanel() {
 
       // Add to history once all images are loaded
       if (allImages.length > 0) {
-        addToHistory(allImages)
+        addToHistory(allImages, { aspectRatio, quality })
       }
     } catch (error) {
       console.error("Generation failed:", error)
