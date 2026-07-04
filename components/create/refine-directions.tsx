@@ -126,7 +126,7 @@ export function RefineDirections({ promptActive }: { promptActive: boolean }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.97 }}
           transition={{ type: "spring", stiffness: 420, damping: 32 }}
-          className="absolute bottom-full left-0 right-0 z-0 mb-2 flex max-w-full flex-wrap items-center justify-center gap-1.5 px-1 sm:gap-2"
+          className="absolute bottom-full left-0 right-0 z-0 mb-2 flex max-w-full gap-1.5 px-2 pb-1.5 overflow-x-auto no-scrollbar flex-nowrap justify-start sm:flex-wrap sm:justify-center sm:overflow-x-visible sm:px-1 sm:gap-2"
           style={{ transformOrigin: "bottom center" }}
         >
           {DIRECTION_TAGS.map((tag) => {
@@ -138,7 +138,7 @@ export function RefineDirections({ promptActive }: { promptActive: boolean }) {
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleRefine(tag.id)}
                 className={cn(
-                  "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all sm:px-3 sm:py-1.5 sm:text-xs",
+                  "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all sm:px-3 sm:py-1.5 sm:text-xs shrink-0",
                   isSelected
                     ? "border-muse-peach bg-muse-peach text-muse-brown font-semibold shadow-sm"
                     : "border-muse-taupe/30 bg-transparent text-muted-foreground hover:border-muse-peach/50 hover:text-foreground"

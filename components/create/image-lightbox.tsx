@@ -91,7 +91,7 @@ export function ImageLightbox({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="relative mx-14 flex max-h-[85vh] max-w-[90vw] items-center justify-center sm:mx-20"
+          className="relative mx-4 flex max-h-[85vh] max-w-[95vw] items-center justify-center sm:mx-20"
           onClick={(e) => e.stopPropagation()}
         >
           <div

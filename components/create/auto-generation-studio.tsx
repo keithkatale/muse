@@ -190,45 +190,65 @@ export function AutoGenerationStudio() {
   return (
     <div className="flex h-[calc(100vh-73px)] flex-col bg-[#FEF8F2] dark:bg-background">
       {/* Header */}
-      <div className="shrink-0 w-full border-b border-muse-taupe/10 px-4 py-3 sm:px-6">
+      <div className="shrink-0 w-full border-b border-muse-taupe/10 px-3 py-2.5 sm:px-6 sm:py-3">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+          className="flex items-center justify-between gap-2"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.push("/discover")}
-              className="text-muted-foreground hover:text-foreground hover:bg-muse-selected/20"
+              className="text-muted-foreground hover:text-foreground hover:bg-muse-selected/20 h-8 px-2 sm:px-3 sm:h-9"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Quiz
+              <ArrowLeft className="mr-1 h-4 w-4 sm:mr-2" />
+              <span className="hidden xs:inline">Quiz</span>
             </Button>
-            <div className="hidden h-4 w-px bg-muse-taupe/20 sm:block" />
-            <h1 className="font-heading text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-              Creation Canvas
+            <div className="h-4 w-px bg-muse-taupe/20" />
+            <h1 className="font-heading text-base font-semibold tracking-tight text-foreground sm:text-xl">
+              Canvas
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="mr-1 text-[10px] font-bold uppercase tracking-wider text-muse-taupe">
-              Your Style:
-            </span>
-            {profile.styles.map((s) => (
-              <span
-                key={s}
-                className="rounded-md bg-muse-selected/40 px-2 py-0.5 font-medium capitalize text-muse-brown"
-              >
-                {s}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground justify-end">
+            {/* Mobile Style Tags (max 1 style + mood) */}
+            <div className="flex sm:hidden items-center gap-1">
+              {profile.styles.slice(0, 1).map((s) => (
+                <span
+                  key={s}
+                  className="rounded-md bg-muse-selected/40 px-2 py-0.5 text-[10px] font-medium capitalize text-muse-brown shrink-0"
+                >
+                  {s}
+                </span>
+              ))}
+              {profile.mood && (
+                <span className="rounded-md bg-muse-selected/40 px-2 py-0.5 text-[10px] font-medium capitalize text-muse-brown shrink-0">
+                  {profile.mood}
+                </span>
+              )}
+            </div>
+
+            {/* Desktop Style Tags (all styles + mood) */}
+            <div className="hidden sm:flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 text-[10px] font-bold uppercase tracking-wider text-muse-taupe shrink-0">
+                Your Style:
               </span>
-            ))}
-            {profile.mood && (
-              <span className="rounded-md bg-muse-selected/40 px-2 py-0.5 font-medium capitalize text-muse-brown">
-                {profile.mood}
-              </span>
-            )}
+              {profile.styles.map((s) => (
+                <span
+                  key={s}
+                  className="rounded-md bg-muse-selected/40 px-2 py-0.5 font-medium capitalize text-muse-brown"
+                >
+                  {s}
+                </span>
+              ))}
+              {profile.mood && (
+                <span className="rounded-md bg-muse-selected/40 px-2 py-0.5 font-medium capitalize text-muse-brown">
+                  {profile.mood}
+                </span>
+              )}
+            </div>
           </div>
         </motion.div>
       </div>

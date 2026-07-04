@@ -4,81 +4,12 @@ import { useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import { Eye, Home, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react"
-import { FRAMES } from "@/lib/mock-data"
+import {
+  ROOM_WALL_OPTIONS,
+  getRoomWallConfig,
+  roomAspectClass,
+} from "@/lib/room-wall-config"
 import { cn } from "@/lib/utils"
-import type { RoomOption } from "@/lib/types"
-
-interface RoomConfig {
-  id: string
-  label: string
-  image: string
-  left: string
-  top: string
-  width: string
-  height: string
-}
-
-const ROOM_CONFIGS: Record<string, RoomConfig> = {
-  bedroom: {
-    id: "bedroom",
-    label: "Bedroom",
-    image: "/images/rooms/bedroom.jpg",
-    left: "12.5%",
-    top: "23.1%",
-    width: "20.0%",
-    height: "23.1%",
-  },
-  "sitting-room": {
-    id: "sitting-room",
-    label: "Sitting Room",
-    image: "/images/rooms/living-room.jpg",
-    left: "50.0%",
-    top: "6.7%",
-    width: "45.0%",
-    height: "80.0%",
-  },
-  studio: {
-    id: "studio",
-    label: "Studio",
-    image: "/images/rooms/wall-3.jpg",
-    left: "5.0%",
-    top: "9.5%",
-    width: "52.5%",
-    height: "76.2%",
-  },
-  dining: {
-    id: "dining",
-    label: "Dining",
-    image: "/images/rooms/dining.jpg",
-    left: "22.5%",
-    top: "6.7%",
-    width: "57.5%",
-    height: "56.7%",
-  },
-  office: {
-    id: "office",
-    label: "Office",
-    image: "/images/rooms/office.jpg",
-    left: "27.5%",
-    top: "15.4%",
-    width: "30.0%",
-    height: "34.6%",
-  },
-  hallway: {
-    id: "hallway",
-    label: "Hallway",
-    image: "/images/rooms/hallway.jpg",
-    left: "15.0%",
-    top: "9.1%",
-    width: "40.0%",
-    height: "54.5%",
-  },
-}
-
-const ROOM_OPTIONS = Object.values(ROOM_CONFIGS)
-const ROOM_IMAGES = Object.fromEntries(
-  Object.entries(ROOM_CONFIGS).map(([key, c]) => [key, c.image])
-) as Record<string, string>
 
 type PreviewMode = "art" | "room" | "detail"
 
@@ -156,15 +87,12 @@ export function ArtPreview({
 }) {
   const [mode, setMode] = useState<PreviewMode>("room")
   const [selectedRoom, setSelectedRoom] = useState<string>(() => {
-    if (initialRoom && initialRoom in ROOM_CONFIGS) {
-      return initialRoom
-    }
-    return "bedroom"
+    const config = getRoomWallConfig(initialRoom)
+    return config.id
   })
   
-  const frameData = frame ? FRAMES.find((f) => f.id === frame) : undefined
-  const roomConfig = ROOM_CONFIGS[selectedRoom] || ROOM_CONFIGS["bedroom"]
-  const roomImage = roomConfig.image
+  const roomConfig = getRoomWallConfig(selectedRoom)
+  const placement = roomConfig.placement
 
   const hasFrame = frame !== "none" && frame !== null
   const hasMat = mat !== "none" && hasFrame
@@ -177,6 +105,8 @@ export function ArtPreview({
 
   // Mat color
   const matColor = mat === "white" ? "#ffffff" : mat === "off-white" ? "#f5f5dc" : "transparent"
+
+  const previewAspectClass = mode === "room" ? roomAspectClass(selectedRoom) : "aspect-[4/3]"
 
   return (
     <div className="flex flex-col gap-3 sm:gap-4">
@@ -200,7 +130,7 @@ export function ArtPreview({
       </div>
 
       {/* Preview Area */}
-      <div className="relative overflow-hidden rounded-lg bg-[#F5EDE6] aspect-[4/3]">
+      <div className={cn("relative overflow-hidden rounded-lg bg-[#F5EDE6]", previewAspectClass)}>
         <AnimatePresence mode="wait">
           {mode === "art" && (
             <motion.div
@@ -263,9 +193,9 @@ export function ArtPreview({
               exit={{ opacity: 0 }}
               className="relative h-full w-full overflow-hidden select-none"
             >
-              {/* Layered room background images for double-buffering preloading */}
+              {/* Room photo — object-contain keeps wall coordinates aligned */}
               <div className="absolute inset-0 w-full h-full pointer-events-none transform-gpu">
-                {ROOM_OPTIONS.map((room) => (
+                {ROOM_WALL_OPTIONS.map((room) => (
                   <div
                     key={room.id}
                     className="absolute inset-0 w-full h-full transition-opacity duration-500 ease-in-out transform-gpu"
@@ -280,32 +210,31 @@ export function ArtPreview({
                       fill
                       sizes="(max-width: 1024px) 100vw, 60vw"
                       className="object-cover"
-                      loading="lazy"
                       priority={room.id === "bedroom"}
                     />
                   </div>
                 ))}
               </div>
 
-              {/* Art overlay positioned on wall - glides smoothly on room changes */}
+              {/* Art overlay — positioned on detected wall zone */}
               <motion.div
                 animate={{
                   scale: sizeScale,
-                  left: roomConfig.left,
-                  top: roomConfig.top,
-                  width: roomConfig.width,
-                  height: roomConfig.height,
+                  left: `${placement.left}%`,
+                  top: `${placement.top}%`,
+                  width: `${placement.width}%`,
+                  height: `${placement.height}%`,
                 }}
                 transition={{
                   duration: 0.5,
-                  ease: [0.25, 0.1, 0.25, 1], // premium cubic bezier
+                  ease: [0.25, 0.1, 0.25, 1],
                 }}
                 style={{
                   ...frameStyle,
                   borderWidth: hasFrame ? frameStyle.borderWidth : "0px",
                   borderStyle: "solid",
                   borderColor: frameStyle.borderColor,
-                  boxShadow: "0 12px 32px rgba(0,0,0,0.22), 0 4px 12px rgba(0,0,0,0.15)",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.12)",
                   background: frameStyle.background,
                   borderRadius: frame === "float" ? "2px" : "0px",
                   position: "absolute",
@@ -315,7 +244,6 @@ export function ArtPreview({
                 }}
                 className="overflow-hidden"
               >
-                {/* Stable Artwork Mounting Container with fluid mat border growth */}
                 <div 
                   className={cn(
                     "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-out transform-gpu"
@@ -343,9 +271,9 @@ export function ArtPreview({
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-muse-floral/95 backdrop-blur-sm rounded-full border border-[#E8DDD4] px-3 py-2 shadow-lg text-[#564738] z-10">
                 <button
                   onClick={() => {
-                    const currentIndex = ROOM_OPTIONS.findIndex(r => r.id === selectedRoom)
-                    const prevIndex = (currentIndex - 1 + ROOM_OPTIONS.length) % ROOM_OPTIONS.length
-                    setSelectedRoom(ROOM_OPTIONS[prevIndex].id)
+                    const currentIndex = ROOM_WALL_OPTIONS.findIndex(r => r.id === selectedRoom)
+                    const prevIndex = (currentIndex - 1 + ROOM_WALL_OPTIONS.length) % ROOM_WALL_OPTIONS.length
+                    setSelectedRoom(ROOM_WALL_OPTIONS[prevIndex].id)
                   }}
                   className="p-1 hover:bg-muse-selected/60 rounded-full transition-colors text-[#564738]"
                   aria-label="Previous room"
@@ -354,14 +282,14 @@ export function ArtPreview({
                 </button>
                 
                 <span className="text-xs font-medium px-2 min-w-[80px] text-center">
-                  {ROOM_OPTIONS.find(r => r.id === selectedRoom)?.label}
+                  {ROOM_WALL_OPTIONS.find(r => r.id === selectedRoom)?.label}
                 </span>
                 
                 <button
                   onClick={() => {
-                    const currentIndex = ROOM_OPTIONS.findIndex(r => r.id === selectedRoom)
-                    const nextIndex = (currentIndex + 1) % ROOM_OPTIONS.length
-                    setSelectedRoom(ROOM_OPTIONS[nextIndex].id)
+                    const currentIndex = ROOM_WALL_OPTIONS.findIndex(r => r.id === selectedRoom)
+                    const nextIndex = (currentIndex + 1) % ROOM_WALL_OPTIONS.length
+                    setSelectedRoom(ROOM_WALL_OPTIONS[nextIndex].id)
                   }}
                   className="p-1 hover:bg-muse-selected/60 rounded-full transition-colors text-[#564738]"
                   aria-label="Next room"
@@ -400,7 +328,7 @@ export function ArtPreview({
           animate={{ opacity: 1, y: 0 }}
           className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1"
         >
-          {ROOM_OPTIONS.map((room) => (
+          {ROOM_WALL_OPTIONS.map((room) => (
             <button
               key={room.id}
               onClick={() => setSelectedRoom(room.id)}
@@ -412,7 +340,7 @@ export function ArtPreview({
               )}
             >
               <Image
-                src={ROOM_IMAGES[room.id]}
+                src={room.image}
                 alt={room.label}
                 fill
                 sizes="80px"

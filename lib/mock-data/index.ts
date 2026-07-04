@@ -7,6 +7,7 @@ import type {
   GalleryItem,
   StartingConcept,
 } from "@/lib/types"
+import { ROOM_WALL_OPTIONS } from "@/lib/room-wall-config"
 
 // ── Sizes ──
 export const SIZES: SizeOption[] = [
@@ -275,14 +276,11 @@ export const MOOD_OPTIONS = [
   { id: "playful" as const, label: "Playful & Whimsical", image: "/images/gallery/art-8.jpg" },
 ]
 
-export const ROOM_OPTIONS = [
-  { id: "bedroom" as const, label: "Bedroom", image: "/images/rooms/bedroom.jpg" },
-  { id: "sitting-room" as const, label: "Sitting Room", image: "/images/rooms/living-room.jpg" },
-  { id: "studio" as const, label: "Studio", image: "/images/rooms/wall-3.jpg" },
-  { id: "dining" as const, label: "Dining", image: "/images/rooms/dining.jpg" },
-  { id: "office" as const, label: "Office", image: "/images/rooms/office.jpg" },
-  { id: "hallway" as const, label: "Hallway", image: "/images/rooms/hallway.jpg" },
-]
+export const ROOM_OPTIONS = ROOM_WALL_OPTIONS.map(({ id, label, image }) => ({
+  id,
+  label,
+  image,
+}))
 
 // ── Pricing Helpers ──
 export function calculatePrice(size: string, medium: string, frame: string, mat: string): number {

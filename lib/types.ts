@@ -13,7 +13,7 @@ export type PaletteOption = "warm-sunset" | "cool-ocean" | "earth-stone" | "bota
 export type StyleOption = "abstract" | "realistic" | "illustrated" | "surreal" | "minimal" | "retro"
 export type SubjectOption = "landscapes" | "florals" | "geometric" | "animals" | "architecture" | "portraits" | "space" | "still-life"
 export type MoodOption = "calm" | "bold" | "warm" | "fresh" | "elegant" | "playful"
-export type RoomOption = "bedroom" | "sitting-room" | "studio" | "dining" | "office" | "hallway"
+export type RoomOption = "bedroom" | "sitting-room" | "studio" | "dining" | "office"
 export type OrientationOption = "portrait" | "landscape"
 
 // ── Generation ──

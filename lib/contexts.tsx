@@ -10,7 +10,7 @@ const LEGACY_ROOM_MAP: Record<string, RoomOption> = {
   "wall-3": "studio",
   "wall-4": "bedroom",
   "wall-5": "office",
-  "wall-6": "hallway",
+  "wall-6": "dining",
   "wall-7": "sitting-room",
   "wall-8": "office",
   "wall-9": "studio",
@@ -22,7 +22,8 @@ const LEGACY_ROOM_MAP: Record<string, RoomOption> = {
 function migrateRoom(room: unknown): RoomOption | null {
   if (!room || typeof room !== "string") return null
   if (room in LEGACY_ROOM_MAP) return LEGACY_ROOM_MAP[room]
-  const valid: RoomOption[] = ["bedroom", "sitting-room", "studio", "dining", "office", "hallway"]
+  const valid: RoomOption[] = ["bedroom", "sitting-room", "studio", "dining", "office"]
+  if (room === "hallway") return "dining"
   return valid.includes(room as RoomOption) ? (room as RoomOption) : null
 }
 

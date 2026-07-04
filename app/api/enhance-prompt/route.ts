@@ -58,7 +58,6 @@ export async function POST(request: Request) {
     studio: "a modern art studio wall",
     dining: "an elegant dining room setting",
     office: "a professional home office backdrop",
-    hallway: "a stylish hallway or entryway",
   }
 
   const aspectMap: Record<string, string> = {

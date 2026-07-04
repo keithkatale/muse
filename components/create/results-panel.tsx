@@ -56,13 +56,80 @@ export function ResultsPanel() {
 
   return (
     <>
-      <div className="flex h-full w-full items-center justify-center px-2 sm:px-3">
-        <div className="flex h-[82%] max-h-[82%] items-center justify-center gap-1.5 sm:gap-2">
+      <div className="flex h-full w-full flex-col items-center justify-center px-2 sm:px-3">
+        {/* Mobile View: 2x2 Grid with selected aspect ratio */}
+        <div className="flex sm:hidden h-full w-full items-center justify-center">
+          <div
+            style={{ aspectRatio: tileAspectRatio(null, aspectRatio) }}
+            className="grid grid-cols-2 grid-rows-2 gap-2 w-full h-auto max-h-[58vh] max-w-[340px] xs:max-w-[380px]"
+          >
+            <AnimatePresence mode="wait">
+              {isGenerating
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <motion.div
+                      key={`skeleton-mobile-${i}`}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ delay: i * 0.05, duration: 0.2 }}
+                      className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-muse-taupe/30 bg-muse-floral/30"
+                    >
+                      <Loader2 className="h-5 w-5 animate-spin text-muse-taupe/50" />
+                    </motion.div>
+                  ))
+                : currentImages.map((img, i) => {
+                    const isSelected = selectedImage?.id === img.id
+                    return (
+                      <motion.div
+                        key={`mobile-${img.id}`}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: i * 0.05 }}
+                        className={cn(
+                          "group relative h-full w-full overflow-hidden rounded-lg transition-all border border-muse-taupe/10",
+                          isSelected ? "ring-2 ring-muse-peach" : "hover:border-muse-peach/40"
+                        )}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setSelectedImage(isSelected ? null : img)}
+                          className="relative h-full w-full"
+                        >
+                          <Image
+                            src={img.url}
+                            alt={`Generated variant ${i + 1}`}
+                            fill
+                            sizes="45vw"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </button>
+
+                        <button
+                          type="button"
+                          aria-label="Zoom in"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setLightboxIndex(i)
+                          }}
+                          className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-full bg-black/45 text-white opacity-90 shadow-sm backdrop-blur-sm transition-opacity"
+                        >
+                          <ZoomIn className="size-3.5" />
+                        </button>
+                      </motion.div>
+                    )
+                  })}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Desktop View: Horizontal Flex Row */}
+        <div className="hidden sm:flex h-[82%] max-h-[82%] items-center justify-center gap-1.5 sm:gap-2">
           <AnimatePresence mode="wait">
             {isGenerating
               ? Array.from({ length: 4 }).map((_, i) => (
                   <motion.div
-                    key={`skeleton-${i}`}
+                    key={`skeleton-desktop-${i}`}
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.98 }}
@@ -80,7 +147,7 @@ export function ResultsPanel() {
                   const isSelected = selectedImage?.id === img.id
                   return (
                     <motion.div
-                      key={img.id}
+                      key={`desktop-${img.id}`}
                       initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: i * 0.06 }}
@@ -145,6 +212,20 @@ export function ResultsPanel() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Mobile-only "Continue" floating action bar when a variant is selected */}
+      {selectedImage && (
+        <div className="absolute bottom-2 inset-x-0 flex justify-center px-4 sm:hidden z-20">
+          <Button
+            size="lg"
+            className="w-full max-w-xs rounded-full bg-muse-peach text-muse-brown font-semibold shadow-xl hover:bg-muse-selected h-12 text-sm transition-all"
+            onClick={() => router.push(`/configure/${selectedImage.id}`)}
+          >
+            Continue with Selected Art
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {lightboxIndex !== null && currentImages.length > 0 && (
         <ImageLightbox

@@ -56,7 +56,6 @@ const ROOM_LABELS: Record<string, string> = {
   studio: "art studio",
   dining: "dining room",
   office: "home office",
-  hallway: "hallway",
 }
 
 function buildProfileSummary(profile: StyleProfile): string {
