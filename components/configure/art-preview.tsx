@@ -7,7 +7,6 @@ import { Eye, Home, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react"
 import {
   ROOM_WALL_OPTIONS,
   getRoomWallConfig,
-  roomAspectClass,
 } from "@/lib/room-wall-config"
 import { cn } from "@/lib/utils"
 
@@ -93,20 +92,23 @@ export function ArtPreview({
   
   const roomConfig = getRoomWallConfig(selectedRoom)
   const placement = roomConfig.placement
+  const fillsExistingFrame = Boolean(roomConfig.fillsExistingFrame)
 
   const hasFrame = frame !== "none" && frame !== null
   const hasMat = mat !== "none" && hasFrame
+  // In room view, sitting-room fills a photo frame — don't double-frame or size-scale
+  const roomHasFrame = hasFrame && !fillsExistingFrame
+  const roomHasMat = hasMat && !fillsExistingFrame
   
-  // Get scale factor based on size
-  const sizeScale = SIZE_SCALES[size] || 1.0
+  const sizeScale = fillsExistingFrame ? 1 : (SIZE_SCALES[size] || 1.0)
   
-  // Get frame style
   const frameStyle = FRAME_STYLES[frame || "none"] || FRAME_STYLES["none"]
+  const roomFrameStyle = fillsExistingFrame ? FRAME_STYLES["none"] : frameStyle
 
   // Mat color
   const matColor = mat === "white" ? "#ffffff" : mat === "off-white" ? "#f5f5dc" : "transparent"
 
-  const previewAspectClass = mode === "room" ? roomAspectClass(selectedRoom) : "aspect-[4/3]"
+  const previewAspectRatio = mode === "room" ? roomConfig.aspectRatio : 4 / 3
 
   return (
     <div className="flex flex-col gap-3 sm:gap-4">
@@ -129,8 +131,11 @@ export function ArtPreview({
         ))}
       </div>
 
-      {/* Preview Area */}
-      <div className={cn("relative overflow-hidden rounded-lg bg-[#F5EDE6]", previewAspectClass)}>
+      {/* Preview Area — aspectRatio matches the active room photo so % coords stay aligned */}
+      <div
+        className="relative w-full overflow-hidden rounded-lg bg-[#F5EDE6]"
+        style={{ aspectRatio: previewAspectRatio }}
+      >
         <AnimatePresence mode="wait">
           {mode === "art" && (
             <motion.div
@@ -193,7 +198,7 @@ export function ArtPreview({
               exit={{ opacity: 0 }}
               className="relative h-full w-full overflow-hidden select-none"
             >
-              {/* Room photo — object-contain keeps wall coordinates aligned */}
+              {/* Room photo — object-cover + matching aspectRatio keeps wall coords aligned */}
               <div className="absolute inset-0 w-full h-full pointer-events-none transform-gpu">
                 {ROOM_WALL_OPTIONS.map((room) => (
                   <div
@@ -216,7 +221,7 @@ export function ArtPreview({
                 ))}
               </div>
 
-              {/* Art overlay — positioned on detected wall zone */}
+              {/* Art overlay — positioned on detected wall / frame zone */}
               <motion.div
                 animate={{
                   scale: sizeScale,
@@ -230,13 +235,15 @@ export function ArtPreview({
                   ease: [0.25, 0.1, 0.25, 1],
                 }}
                 style={{
-                  ...frameStyle,
-                  borderWidth: hasFrame ? frameStyle.borderWidth : "0px",
+                  ...roomFrameStyle,
+                  borderWidth: roomHasFrame ? roomFrameStyle.borderWidth : "0px",
                   borderStyle: "solid",
-                  borderColor: frameStyle.borderColor,
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.12)",
-                  background: frameStyle.background,
-                  borderRadius: frame === "float" ? "2px" : "0px",
+                  borderColor: roomFrameStyle.borderColor,
+                  boxShadow: fillsExistingFrame
+                    ? "none"
+                    : "0 8px 24px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.12)",
+                  background: roomFrameStyle.background,
+                  borderRadius: frame === "float" && !fillsExistingFrame ? "2px" : "0px",
                   position: "absolute",
                   transformOrigin: "center center",
                   zIndex: 2,
@@ -249,12 +256,12 @@ export function ArtPreview({
                     "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-out transform-gpu"
                   )}
                   style={{ 
-                    padding: hasMat ? "5%" : "0px",
-                    backgroundColor: hasMat ? matColor : "transparent",
+                    padding: roomHasMat ? "5%" : "0px",
+                    backgroundColor: roomHasMat ? matColor : "transparent",
                     willChange: "padding, background-color"
                   }}
                 >
-                  <div className={cn("relative w-full h-full transition-all duration-300", hasMat && "shadow-inner")}>
+                  <div className={cn("relative w-full h-full transition-all duration-300", roomHasMat && "shadow-inner")}>
                     <Image
                       src={imageUrl}
                       alt="Art in room"

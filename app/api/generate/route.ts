@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { fal } from "@fal-ai/client"
 import type { GenerateRequest, GeneratedImage } from "@/lib/types"
 import { GALLERY_ITEMS } from "@/lib/mock-data"
+import { withArtworkIsolation } from "@/lib/artwork-isolation"
 
 const ASPECT_RATIOS: Record<string, { width: number; height: number }> = {
   "3:4": { width: 864, height: 1184 },
@@ -28,6 +29,8 @@ export async function POST(request: Request) {
   console.log("Prompt:", enhancedPrompt.substring(0, 50) + "...")
   console.log("Aspect ratio:", aspectRatio)
   console.log("Quality:", quality)
+
+  const generationPrompt = withArtworkIsolation(enhancedPrompt)
 
   if (!apiKey) {
     console.warn("FAL_KEY not found - using mock images")
@@ -73,7 +76,7 @@ export async function POST(request: Request) {
 
     const result = await fal.subscribe(IMAGE_MODEL, {
       input: {
-        prompt: enhancedPrompt,
+        prompt: generationPrompt,
         aspect_ratio: aspectRatioFal,
         num_images: numImages,
         resolution: resolution as "1K" | "2K" | "4K",

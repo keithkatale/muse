@@ -53,11 +53,11 @@ export async function POST(request: Request) {
   }
 
   const roomMap: Record<string, string> = {
-    bedroom: "a cozy bedroom setting",
-    "sitting-room": "a comfortable sitting room or living room",
-    studio: "a modern art studio wall",
-    dining: "an elegant dining room setting",
-    office: "a professional home office backdrop",
+    bedroom: "suitable as bedroom wall art",
+    "sitting-room": "suitable as living room wall art",
+    studio: "suitable as studio wall art",
+    dining: "suitable as dining room wall art",
+    office: "suitable as home office wall art",
   }
 
   const aspectMap: Record<string, string> = {
@@ -75,7 +75,6 @@ export async function POST(request: Request) {
   const aspect = aspectMap[aspectRatio] || ""
 
   const baseSubject = subjects ? `Artwork featuring ${subjects}` : ""
-  const roomContext = room ? `designed for display in ${room}` : ""
   const core = userInput || baseSubject
 
   const enhancedPrompt = [
@@ -83,9 +82,9 @@ export async function POST(request: Request) {
     styles ? `in ${styles}` : "",
     palettes ? `using ${palettes}` : "",
     mood ? `evoking a ${mood}` : "",
-    roomContext,
+    room,
     aspect ? `composed for ${aspect}` : "",
-    "Photographic, realistic, high detail. Professional composition, beautiful natural lighting. Suitable for wall art in households. Content only, no background environment or frame.",
+    "Photographic, realistic, high detail. Professional composition. Isolated artwork only, edge-to-edge composition only — the full image IS the artwork itself.",
   ]
     .filter(Boolean)
     .join(". ")

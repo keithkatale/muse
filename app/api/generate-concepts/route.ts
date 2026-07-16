@@ -10,6 +10,8 @@ Requirements:
 - Mix of subjects: pets (dogs, cats), objects, landscapes, still life, portraits, nature
 - Titles: 2-5 words, catchy
 - Prompts: 1-2 sentences, descriptive enough for AI image generation
+- Prompts must describe ONLY the artwork itself — isolated, edge-to-edge composition
+- Never describe frames, canvases, walls, rooms, interiors, furniture, mockups, galleries, museums, exhibitions, hanging displays, product photography, lifestyle scenes, environments, backgrounds, decor, windows, floors, shelves, lighting setups, camera angles, depth of field, room shadows, borders, mats, margins, watermarks, text, logos, or signatures
 
 Return ONLY a valid JSON array. No markdown, no explanation. Format:
 [{"id":"concept-1","title":"...","prompt":"..."},{"id":"concept-2","title":"...","prompt":"..."},...]
@@ -73,7 +75,7 @@ function buildProfileSummary(profile: StyleProfile): string {
     parts.push(`Mood: ${MOOD_LABELS[profile.mood] || profile.mood}`)
   }
   if (profile.room) {
-    parts.push(`Room: ${ROOM_LABELS[profile.room] || profile.room}`)
+    parts.push(`Intended wall-art setting (do NOT depict the room): ${ROOM_LABELS[profile.room] || profile.room}`)
   }
   return parts.join(". ")
 }
