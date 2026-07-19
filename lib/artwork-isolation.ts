@@ -1,6 +1,6 @@
 /**
- * Negative / isolation steering appended to every image-generation prompt.
- * Keeps output as edge-to-edge artwork only — no mockups, rooms, frames, or templates.
+ * Server-only negative / isolation steering for image generation.
+ * Never expose this string in the UI prompt — append only when calling the model.
  */
 export const ARTWORK_ISOLATION_CONSTRAINTS = [
   "no frame",
@@ -42,10 +42,34 @@ export const ARTWORK_ISOLATION_CONSTRAINTS = [
   "edge-to-edge composition only",
 ].join(", ")
 
-/** Append isolation constraints to a creative prompt before sending to the image model. */
+const ISOLATION_MARKERS = [
+  ARTWORK_ISOLATION_CONSTRAINTS,
+  "Isolated artwork only, edge-to-edge composition only — the full image IS the artwork itself",
+  "isolated artwork only, edge-to-edge composition only",
+  "Content only, no background environment or frame",
+]
+
+/** Remove any previously embedded isolation text from a user-facing prompt. */
+export function stripArtworkIsolation(prompt: string): string {
+  let cleaned = prompt.trim()
+  for (const marker of ISOLATION_MARKERS) {
+    cleaned = cleaned.replace(marker, "")
+  }
+  // Drop trailing "no frame, no canvas..." style tails if present
+  const noListIdx = cleaned.search(/\bno frame,\s*no canvas/i)
+  if (noListIdx >= 0) {
+    cleaned = cleaned.slice(0, noListIdx)
+  }
+  return cleaned
+    .replace(/[.]\s*[.]+/g, ".")
+    .replace(/\s+/g, " ")
+    .replace(/[.\s]+$/, "")
+    .trim()
+}
+
+/** Build the full model prompt: creative text + hidden isolation constraints. */
 export function withArtworkIsolation(prompt: string): string {
-  const trimmed = prompt.trim().replace(/[.\s]+$/, "")
-  if (!trimmed) return ARTWORK_ISOLATION_CONSTRAINTS
-  if (trimmed.includes("isolated artwork only")) return trimmed
-  return `${trimmed}. ${ARTWORK_ISOLATION_CONSTRAINTS}`
+  const creative = stripArtworkIsolation(prompt)
+  if (!creative) return ARTWORK_ISOLATION_CONSTRAINTS
+  return `${creative}. ${ARTWORK_ISOLATION_CONSTRAINTS}`
 }

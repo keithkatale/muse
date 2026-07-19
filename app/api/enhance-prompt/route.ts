@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     mood ? `evoking a ${mood}` : "",
     room,
     aspect ? `composed for ${aspect}` : "",
-    "Photographic, realistic, high detail. Professional composition. Isolated artwork only, edge-to-edge composition only — the full image IS the artwork itself.",
+    "Photographic, realistic, high detail. Professional composition.",
   ]
     .filter(Boolean)
     .join(". ")

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { fal } from "@fal-ai/client"
 import type { GenerateRequest, GeneratedImage } from "@/lib/types"
 import { GALLERY_ITEMS } from "@/lib/mock-data"
-import { withArtworkIsolation } from "@/lib/artwork-isolation"
+import { withArtworkIsolation, stripArtworkIsolation } from "@/lib/artwork-isolation"
 
 const ASPECT_RATIOS: Record<string, { width: number; height: number }> = {
   "3:4": { width: 864, height: 1184 },
@@ -30,7 +30,9 @@ export async function POST(request: Request) {
   console.log("Aspect ratio:", aspectRatio)
   console.log("Quality:", quality)
 
-  const generationPrompt = withArtworkIsolation(enhancedPrompt)
+  // User-facing prompt stays clean; isolation constraints are only sent to the model.
+  const creativePrompt = stripArtworkIsolation(enhancedPrompt)
+  const generationPrompt = withArtworkIsolation(creativePrompt)
 
   if (!apiKey) {
     console.warn("FAL_KEY not found - using mock images")
@@ -48,7 +50,7 @@ export async function POST(request: Request) {
           const image: GeneratedImage = {
             id: `gen-${Date.now()}-${i}`,
             url: item.url,
-            prompt: enhancedPrompt,
+            prompt: creativePrompt,
             width: dims.width,
             height: dims.height,
           }
@@ -97,7 +99,7 @@ export async function POST(request: Request) {
           const generated: GeneratedImage = {
             id: `${baseId}-${i}`,
             url: img.url,
-            prompt: enhancedPrompt,
+            prompt: creativePrompt,
             width: img.width ?? dims.width,
             height: img.height ?? dims.height,
           }
@@ -127,7 +129,7 @@ export async function POST(request: Request) {
           const image: GeneratedImage = {
             id: `gen-${Date.now()}-${i}`,
             url: item.url,
-            prompt: enhancedPrompt,
+            prompt: creativePrompt,
             width: dims.width,
             height: dims.height,
           }

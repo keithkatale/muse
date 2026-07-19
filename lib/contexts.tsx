@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react"
 import type { StyleProfile, GeneratedImage, CartItem, Cart, RoomOption, GenerationBatch } from "@/lib/types"
 import { calculatePrice } from "@/lib/mock-data"
+import { stripArtworkIsolation } from "@/lib/artwork-isolation"
 
 const LEGACY_ROOM_MAP: Record<string, RoomOption> = {
   "wall-1": "sitting-room",
@@ -183,10 +184,10 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     try {
       const storedPrompt = localStorage.getItem("muse-prompt")
-      if (storedPrompt) setPrompt(storedPrompt)
+      if (storedPrompt) setPrompt(stripArtworkIsolation(storedPrompt))
 
       const storedEnhanced = localStorage.getItem("muse-enhanced-prompt")
-      if (storedEnhanced) setEnhancedPrompt(storedEnhanced)
+      if (storedEnhanced) setEnhancedPrompt(stripArtworkIsolation(storedEnhanced))
 
       const storedCurrent = localStorage.getItem("muse-current-images")
       if (storedCurrent) setCurrentImages(JSON.parse(storedCurrent))
