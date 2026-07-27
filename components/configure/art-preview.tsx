@@ -1,21 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { Eye, Home, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react"
+import { Eye, Home, ChevronLeft, ChevronRight } from "lucide-react"
 import {
   ROOM_WALL_OPTIONS,
   getRoomWallConfig,
 } from "@/lib/room-wall-config"
 import { cn } from "@/lib/utils"
 
-type PreviewMode = "art" | "room" | "detail"
+type PreviewMode = "art" | "room"
 
 const PREVIEW_TABS: { id: PreviewMode; label: string; icon: typeof Eye }[] = [
   { id: "art", label: "Art Only", icon: Eye },
   { id: "room", label: "Room View", icon: Home },
-  { id: "detail", label: "Detail", icon: ZoomIn },
 ]
 
 // Size scale factors for visual representation
@@ -77,12 +76,14 @@ export function ArtPreview({
   room: initialRoom,
   size = "16x20",
   mat = "none",
+  imageRatio = 3 / 4,
 }: {
   imageUrl: string
   frame: string | null
   room: string
   size?: string
   mat?: string
+  imageRatio?: number
 }) {
   const [mode, setMode] = useState<PreviewMode>("room")
   const [selectedRoom, setSelectedRoom] = useState<string>(() => {
@@ -93,6 +94,53 @@ export function ArtPreview({
   const roomConfig = getRoomWallConfig(selectedRoom)
   const placement = roomConfig.placement
   const fillsExistingFrame = Boolean(roomConfig.fillsExistingFrame)
+
+  // Calculate dynamic placement to match the image's actual aspect ratio without exceeding original bounds
+  const adjustedPlacement = useMemo(() => {
+    if (fillsExistingFrame) {
+      return {
+        left: placement.left,
+        top: placement.top,
+        width: placement.width,
+        height: placement.height,
+      }
+    }
+
+    const containerAspect = roomConfig.aspectRatio
+    // The ratio of percentage-width to percentage-height must equal imageRatio / containerAspect
+    const percentageRatio = imageRatio / containerAspect
+
+    const originalWidth = placement.width
+    const originalHeight = placement.height
+    const originalAspect = originalWidth / originalHeight
+    
+    let newWidth = originalWidth
+    let newHeight = originalHeight
+
+    if (percentageRatio > originalAspect) {
+      // Image is wider than the original slot in percentage terms
+      newWidth = originalWidth
+      newHeight = originalWidth / percentageRatio
+    } else {
+      // Image is taller than or equal to the original slot in percentage terms
+      newHeight = originalHeight
+      newWidth = originalHeight * percentageRatio
+    }
+
+    // Keep the center aligned with the original placement's center
+    const originalCenterX = placement.left + originalWidth / 2
+    const originalCenterY = placement.top + originalHeight / 2
+
+    const newLeft = originalCenterX - newWidth / 2
+    const newTop = originalCenterY - newHeight / 2
+
+    return {
+      left: newLeft,
+      top: newTop,
+      width: newWidth,
+      height: newHeight,
+    }
+  }, [placement, fillsExistingFrame, imageRatio, roomConfig.aspectRatio])
 
   const hasFrame = frame !== "none" && frame !== null
   const hasMat = mat !== "none" && hasFrame
@@ -170,9 +218,10 @@ export function ArtPreview({
                   }}
                 >
                   <div 
-                    className="relative aspect-[3/4] transition-all duration-300 ease-out shadow-inner"
+                    className="relative transition-all duration-300 ease-out shadow-inner"
                     style={{
                       width: hasMat ? "200px" : "240px", // stable dimension scales
+                      aspectRatio: imageRatio,
                       willChange: "width"
                     }}
                   >
@@ -225,10 +274,10 @@ export function ArtPreview({
               <motion.div
                 animate={{
                   scale: sizeScale,
-                  left: `${placement.left}%`,
-                  top: `${placement.top}%`,
-                  width: `${placement.width}%`,
-                  height: `${placement.height}%`,
+                  left: `${adjustedPlacement.left}%`,
+                  top: `${adjustedPlacement.top}%`,
+                  width: `${adjustedPlacement.width}%`,
+                  height: `${adjustedPlacement.height}%`,
                 }}
                 transition={{
                   duration: 0.5,
@@ -256,18 +305,22 @@ export function ArtPreview({
                     "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-out transform-gpu"
                   )}
                   style={{ 
-                    padding: roomHasMat ? "5%" : "0px",
-                    backgroundColor: roomHasMat ? matColor : "transparent",
+                    padding: roomHasMat ? "5%" : (fillsExistingFrame ? "4%" : "0px"),
+                    backgroundColor: roomHasMat 
+                      ? matColor 
+                      : (fillsExistingFrame 
+                          ? (mat === "off-white" ? "#f5f5dc" : "#ffffff") 
+                          : "transparent"),
                     willChange: "padding, background-color"
                   }}
                 >
-                  <div className={cn("relative w-full h-full transition-all duration-300", roomHasMat && "shadow-inner")}>
+                  <div className={cn("relative w-full h-full transition-all duration-300", (roomHasMat || fillsExistingFrame) && "shadow-inner")}>
                     <Image
                       src={imageUrl}
                       alt="Art in room"
                       fill
                       sizes="(max-width: 1024px) 50vw, 30vw"
-                      className="object-cover"
+                      className={fillsExistingFrame ? "object-contain" : "object-cover"}
                       unoptimized
                     />
                   </div>
@@ -307,24 +360,7 @@ export function ArtPreview({
             </motion.div>
           )}
 
-          {mode === "detail" && (
-            <motion.div
-              key="detail-view-container"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="relative h-full"
-            >
-              <Image
-                src={imageUrl}
-                alt="Detail view"
-                fill
-                sizes="(max-width: 1024px) 100vw, 60vw"
-                className="object-cover scale-150"
-                unoptimized
-              />
-            </motion.div>
-          )}
+
         </AnimatePresence>
       </div>
 

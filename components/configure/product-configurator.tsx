@@ -139,6 +139,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
               room={profile?.room || "bedroom"}
               size={size}
               mat={mat}
+              imageRatio={image ? image.width / image.height : 3 / 4}
             />
           </motion.div>
 

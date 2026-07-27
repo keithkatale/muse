@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { useStyleProfile } from "@/lib/contexts"
+import { useStyleProfile, useGeneration } from "@/lib/contexts"
 import { STYLE_OPTIONS, SUBJECT_OPTIONS } from "@/lib/mock-data"
 import type { StyleProfile, PaletteOption, StyleOption, SubjectOption, MoodOption, RoomOption, OrientationOption } from "@/lib/types"
 import { EmailStep } from "./steps/email-step"
@@ -20,6 +20,7 @@ const TOTAL_STEPS = 7
 export function StyleQuiz() {
   const router = useRouter()
   const { setProfile } = useStyleProfile()
+  const { setCurrentImages, setSelectedImage, setPrompt, setEnhancedPrompt } = useGeneration()
   const [step, setStep] = useState(0)
 
   const [email, setEmail] = useState("")
@@ -76,6 +77,12 @@ export function StyleQuiz() {
         orientation 
       }
       setProfile(profile)
+
+      // Clear previous generation session so the user starts with a clean canvas and a fresh prompt
+      setCurrentImages([])
+      setSelectedImage(null)
+      setPrompt("")
+      setEnhancedPrompt("")
       
       // Store lead information
       try {

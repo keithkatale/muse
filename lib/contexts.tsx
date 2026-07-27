@@ -180,23 +180,9 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
   const [quality, setQuality] = useState<"standard" | "premium">("standard")
   const [loaded, setLoaded] = useState(false)
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount (only persist long-term settings and history)
   useEffect(() => {
     try {
-      const storedPrompt = localStorage.getItem("muse-prompt")
-      if (storedPrompt) setPrompt(stripArtworkIsolation(storedPrompt))
-
-      const storedEnhanced = localStorage.getItem("muse-enhanced-prompt")
-      if (storedEnhanced) setEnhancedPrompt(stripArtworkIsolation(storedEnhanced))
-
-      const storedCurrent = localStorage.getItem("muse-current-images")
-      if (storedCurrent) setCurrentImages(JSON.parse(storedCurrent))
-
-      const storedSelected = localStorage.getItem("muse-selected-image")
-      if (storedSelected && storedSelected !== "undefined") {
-        setSelectedImage(JSON.parse(storedSelected))
-      }
-
       const storedHistory = localStorage.getItem("muse-generation-history")
       if (storedHistory) {
         const parsed = JSON.parse(storedHistory)
@@ -231,14 +217,10 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
     setLoaded(true)
   }, [])
 
-  // Sync state to localStorage when values change
+  // Sync state to localStorage when values change (only sync settings and history)
   useEffect(() => {
     if (!loaded) return
     try {
-      localStorage.setItem("muse-prompt", prompt)
-      localStorage.setItem("muse-enhanced-prompt", enhancedPrompt)
-      localStorage.setItem("muse-current-images", JSON.stringify(currentImages))
-      localStorage.setItem("muse-selected-image", selectedImage ? JSON.stringify(selectedImage) : "")
       localStorage.setItem("muse-generation-history", JSON.stringify(generationHistory))
       localStorage.setItem("muse-active-modifiers", JSON.stringify(activeModifiers))
       localStorage.setItem("muse-aspect-ratio", aspectRatio)
@@ -246,7 +228,7 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
     } catch (e) {
       console.error("Failed to save generation state to localStorage:", e)
     }
-  }, [loaded, prompt, enhancedPrompt, currentImages, selectedImage, generationHistory, activeModifiers, aspectRatio, quality])
+  }, [loaded, generationHistory, activeModifiers, aspectRatio, quality])
 
   const addToHistory = useCallback(
     (
