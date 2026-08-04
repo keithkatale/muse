@@ -81,6 +81,13 @@ export default function RootLayout({
             gtag('config', 'G-3TYSGHZ6GY');
           `}
         </Script>
+
+        {/* Klaviyo Onsite Tracking Tag */}
+        <Script
+          id="klaviyo-onsite"
+          strategy="afterInteractive"
+          src={`https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=${process.env.NEXT_PUBLIC_KLAVIYO_COMPANY_ID}`}
+        />
         <Providers>
           <SiteHeader />
           <main>{children}</main>
