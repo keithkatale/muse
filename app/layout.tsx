@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { DM_Sans } from "next/font/google"
 import localFont from "next/font/local"
 import { Toaster } from "sonner"
+import Script from "next/script"
 
 import "./globals.css"
 import { Providers } from "@/components/providers"
@@ -67,6 +68,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${dmSans.variable} ${appleGaramond.variable} ${appleGaramondHeading.variable}`}>
       <body className="font-sans antialiased">
+        {/* Google Analytics (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-3TYSGHZ6GY"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-3TYSGHZ6GY');
+          `}
+        </Script>
         <Providers>
           <SiteHeader />
           <main>{children}</main>
