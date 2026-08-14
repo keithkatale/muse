@@ -38,6 +38,20 @@ export function saveConsent(choice: CookieConsentChoice): CookieConsentState {
   }
   localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(state))
   window.dispatchEvent(new CustomEvent("muse:cookie-consent", { detail: state }))
+
+  // Keep PostHog in sync with cookie preference (loaded via instrumentation-client)
+  void import("posthog-js")
+    .then(({ default: posthog }) => {
+      if (choice === "all") {
+        posthog.opt_in_capturing()
+      } else {
+        posthog.opt_out_capturing()
+      }
+    })
+    .catch(() => {
+      /* PostHog not available */
+    })
+
   return state
 }
 

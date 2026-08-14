@@ -100,7 +100,7 @@ export async function syncLeadToKlaviyo(
   }
 
   const normalizedEmail = email.trim().toLowerCase()
-  const properties: Record<string, string> = {
+  const properties: Record<string, string | boolean> = {
     "Muse Onboarding Style": profileData.styles?.join(", ") || "",
     "Muse Onboarding Subject": profileData.subjects?.join(", ") || "",
     "Muse Onboarding Palette": profileData.palettes?.join(", ") || "",
@@ -108,6 +108,7 @@ export async function syncLeadToKlaviyo(
     "Muse Preferred Room": profileData.room || "",
     "Muse Preferred Orientation": profileData.orientation || "",
     Source: "AI Style Quiz",
+    "Accepts Marketing": true,
   }
 
   try {
@@ -131,6 +132,8 @@ export async function syncLeadToKlaviyo(
       const json = await createResponse.json()
       const profileId = json.data?.id as string | undefined
       console.log(`[Klaviyo] Successfully created profile. ID: ${profileId}`)
+
+      await subscribeEmailMarketing(normalizedEmail)
 
       const listId = process.env.KLAVIYO_LIST_ID
       if (listId && profileId) {
@@ -172,6 +175,8 @@ export async function syncLeadToKlaviyo(
 
       console.log(`[Klaviyo] Updated existing profile. ID: ${duplicateId}`)
 
+      await subscribeEmailMarketing(normalizedEmail)
+
       const listId = process.env.KLAVIYO_LIST_ID
       if (listId) {
         await subscribeProfileToList(duplicateId, listId)
@@ -190,7 +195,8 @@ export async function syncLeadToKlaviyo(
 }
 
 /**
- * Subscribes an existing profile to a specific list (v3 List API)
+ * Subscribes an existing profile to a specific list (v3 List API).
+ * Note: this only adds membership — it does NOT set email marketing consent.
  */
 export async function subscribeProfileToList(profileId: string, listId: string): Promise<boolean> {
   const apiKey = getApiKey()
@@ -221,6 +227,95 @@ export async function subscribeProfileToList(profileId: string, listId: string):
     return true
   } catch (error) {
     console.error("[Klaviyo] Error subscribing to list:", error)
+    return false
+  }
+}
+
+/**
+ * Explicitly opt the profile into email marketing (required for reliable flow delivery).
+ * Uses Bulk Subscribe Profiles — adding to a list alone leaves consent as NEVER_SUBSCRIBED.
+ * When the list is double opt-in, pass historicalImport=true only if you already collected consent.
+ */
+export async function subscribeEmailMarketing(
+  email: string,
+  options?: { listId?: string; source?: string; historicalImport?: boolean }
+): Promise<boolean> {
+  const apiKey = getApiKey()
+  if (!apiKey) return false
+
+  const normalizedEmail = email.trim().toLowerCase()
+  if (!normalizedEmail.includes("@")) return false
+
+  const listId = options?.listId || process.env.KLAVIYO_LIST_ID
+  const historicalImport = options?.historicalImport ?? true
+  const consentedAt = new Date().toISOString().replace("Z", "+00:00")
+
+  const marketingConsent: Record<string, string> = {
+    consent: "SUBSCRIBED",
+  }
+  if (historicalImport) {
+    marketingConsent.consented_at = consentedAt
+  }
+
+  const body: Record<string, unknown> = {
+    data: {
+      type: "profile-subscription-bulk-create-job",
+      attributes: {
+        custom_source: options?.source || "Muse Style Quiz",
+        ...(historicalImport ? { historical_import: true } : {}),
+        profiles: {
+          data: [
+            {
+              type: "profile",
+              attributes: {
+                email: normalizedEmail,
+                subscriptions: {
+                  email: {
+                    marketing: marketingConsent,
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+      ...(listId
+        ? {
+            relationships: {
+              list: {
+                data: { type: "list", id: listId },
+              },
+            },
+          }
+        : {}),
+    },
+  }
+
+  try {
+    const response = await fetch(`${KLAVIYO_BASE}/profile-subscription-bulk-create-jobs/`, {
+      method: "POST",
+      headers: {
+        ...klaviyoHeaders(apiKey),
+        accept: "application/vnd.api+json",
+        "content-type": "application/vnd.api+json",
+      },
+      body: JSON.stringify(body),
+    })
+
+    // 202 Accepted = job queued
+    if (response.status === 202 || response.ok) {
+      console.log(`[Klaviyo] Queued email marketing subscribe for ${normalizedEmail}`)
+      return true
+    }
+
+    const errorText = await response.text()
+    console.error(
+      `[Klaviyo] Email marketing subscribe failed (${response.status}):`,
+      errorText
+    )
+    return false
+  } catch (error) {
+    console.error("[Klaviyo] Error subscribing email marketing:", error)
     return false
   }
 }

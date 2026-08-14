@@ -58,6 +58,11 @@ export const metadata: Metadata = {
   title: "Muse — AI-Powered Wall Art",
   description:
     "Create custom wall art with AI. Discover your style, generate unique artwork, and order museum-quality prints delivered to your door.",
+  icons: {
+    icon: [{ url: "/Vector.png", type: "image/png" }],
+    apple: [{ url: "/Vector.png", type: "image/png" }],
+    shortcut: ["/Vector.png"],
+  },
 }
 
 export default function RootLayout({
