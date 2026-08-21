@@ -12,23 +12,26 @@ const ASPECT_RATIOS: Record<string, { width: number; height: number }> = {
 }
 
 // Map app aspect ratio to fal Nano Banana Pro aspect_ratio (same enum: "3:4", "1:1", "4:3", "16:9")
-// fal Nano Banana Pro model (Gemini 3 Pro Image)
+// fal Nano Banana Pro — text-to-image, or /edit when refining a selected image
 const IMAGE_MODEL = "fal-ai/nano-banana-pro"
+const EDIT_MODEL = "fal-ai/nano-banana-pro/edit"
 
 let callCount = 0
 
 export async function POST(request: Request) {
   const body: GenerateRequest = await request.json()
-  const { enhancedPrompt, aspectRatio, count, quality } = body
+  const { enhancedPrompt, aspectRatio, count, quality: _quality, referenceImageUrl } = body
 
   const dims = ASPECT_RATIOS[aspectRatio] || ASPECT_RATIOS["3:4"]
   const aspectRatioFal = aspectRatio as "3:4" | "1:1" | "4:3" | "16:9"
   const apiKey = process.env.FAL_KEY
+  const isEdit = Boolean(referenceImageUrl)
 
   console.log("FAL_KEY status:", apiKey ? `Found (${apiKey.substring(0, 10)}...)` : "NOT FOUND")
   console.log("Prompt:", enhancedPrompt.substring(0, 50) + "...")
   console.log("Aspect ratio:", aspectRatio)
-  console.log("Quality:", quality)
+  console.log("Mode:", isEdit ? "edit (from selected image)" : "text-to-image")
+  console.log("Resolution: 4K (max)")
 
   // User-facing prompt stays clean; isolation constraints are only sent to the model.
   const creativePrompt = stripArtworkIsolation(enhancedPrompt)
@@ -72,17 +75,27 @@ export async function POST(request: Request) {
     fal.config({ credentials: apiKey })
 
     const numImages = Math.min(count || 4, 4)
-    const resolution = quality === "premium" ? "2K" : "1K"
+    // Always generate at the highest supported resolution for print quality.
+    const resolution = "4K" as const
+    const model = isEdit ? EDIT_MODEL : IMAGE_MODEL
 
-    console.log("Generating", numImages, "images with", IMAGE_MODEL)
+    console.log("Generating", numImages, "images with", model, "at", resolution)
 
-    const result = await fal.subscribe(IMAGE_MODEL, {
-      input: {
-        prompt: generationPrompt,
-        aspect_ratio: aspectRatioFal,
-        num_images: numImages,
-        resolution: resolution as "1K" | "2K" | "4K",
-      },
+    const result = await fal.subscribe(model, {
+      input: isEdit
+        ? {
+            prompt: generationPrompt,
+            image_urls: [referenceImageUrl!],
+            aspect_ratio: aspectRatioFal,
+            num_images: numImages,
+            resolution,
+          }
+        : {
+            prompt: generationPrompt,
+            aspect_ratio: aspectRatioFal,
+            num_images: numImages,
+            resolution,
+          },
     })
 
     const data = result.data as {

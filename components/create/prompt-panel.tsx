@@ -25,7 +25,7 @@ export function PromptPanel() {
     setSelectedImage,
     isGenerating, setIsGenerating,
     aspectRatio, setAspectRatio,
-    quality, setQuality,
+    quality,
   } = useGeneration()
   const { profile, isQuizComplete } = useStyleProfile()
   const { concepts } = useRotatingConcepts(profile ?? null)
@@ -183,31 +183,6 @@ export function PromptPanel() {
               {opt.label}
             </button>
           ))}
-        </div>
-      </div>
-
-      {/* Quality Toggle */}
-      <div>
-        <p className="mb-3 text-xs uppercase tracking-[0.15em] text-muted-foreground">Quality</p>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setQuality("standard")}
-            className={cn(
-              "flex-1 rounded-lg py-2.5 text-xs",
-              selectionCard(quality === "standard", "rounded-lg")
-            )}
-          >
-            Standard
-          </button>
-          <button
-            onClick={() => setQuality("premium")}
-            className={cn(
-              "flex-1 rounded-lg py-2.5 text-xs",
-              selectionCard(quality === "premium", "rounded-lg")
-            )}
-          >
-            Premium
-          </button>
         </div>
       </div>
 

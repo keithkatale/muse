@@ -154,19 +154,43 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
             <div>
               <p className="mb-3 text-xs uppercase tracking-[0.15em] text-muted-foreground">Size</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {SIZES.map((s) => (
+                {SIZES.map((s) => {
+                  const isSelected = size === s.id
+                  return (
                   <button
                     key={s.id}
+                    type="button"
                     onClick={() => setSize(s.id)}
+                    aria-pressed={isSelected}
                     className={cn(
-                      "flex flex-col items-center rounded-lg py-2.5 sm:py-3 text-xs",
-                      configuratorSelectionCard(size === s.id, "rounded-lg")
+                      "relative flex flex-col items-center rounded-lg py-2.5 sm:py-3 text-xs",
+                      configuratorSelectionCard(isSelected, "rounded-lg"),
+                      isSelected &&
+                        "border-2 border-[#564738] bg-[#FFE3C5] ring-2 ring-[#F6CDA1]/50 shadow-md"
                     )}
                   >
-                    <span className="font-medium">{s.label}</span>
-                    <span className="mt-0.5 text-[10px]">{formatPrice(s.basePrice)}</span>
+                    {isSelected && (
+                      <span
+                        aria-hidden
+                        className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#564738] text-[#FEF8F2]"
+                      >
+                        <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                      </span>
+                    )}
+                    <span className={cn("font-medium", isSelected && "text-[#564738]")}>
+                      {s.label}
+                    </span>
+                    <span
+                      className={cn(
+                        "mt-0.5 text-[10px]",
+                        isSelected ? "text-[#947A5D]" : "text-muted-foreground"
+                      )}
+                    >
+                      {formatPrice(s.basePrice)}
+                    </span>
                   </button>
-                ))}
+                  )
+                })}
               </div>
               {resolution && resolution.needsUpscale && (
                 <p className="mt-2 text-[11px] text-muse-taupe">

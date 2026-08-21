@@ -163,7 +163,7 @@ const GenerationContext = createContext<GenerationContextType>({
   setIsGenerating: () => {},
   aspectRatio: "3:4",
   setAspectRatio: () => {},
-  quality: "standard",
+  quality: "premium",
   setQuality: () => {},
   clearSession: () => {},
 })
@@ -177,7 +177,7 @@ export function GenerationProvider({ children }: { children: React.ReactNode }) 
   const [activeModifiers, setActiveModifiers] = useState<string[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [aspectRatio, setAspectRatio] = useState("3:4")
-  const [quality, setQuality] = useState<"standard" | "premium">("standard")
+  const [quality, setQuality] = useState<"standard" | "premium">("premium")
   const [loaded, setLoaded] = useState(false)
 
   // Load from localStorage on mount (only persist long-term settings and history)

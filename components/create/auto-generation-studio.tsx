@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { useGeneration, useStyleProfile } from "@/lib/contexts"
 import { ResultsPanel } from "./results-panel"
 import { MusePromptBox } from "./muse-prompt-box"
-import { RefineDirections } from "./refine-directions"
 import type { EnhancePromptResponse } from "@/lib/types"
 
 export function AutoGenerationStudio() {
@@ -21,18 +20,47 @@ export function AutoGenerationStudio() {
     setEnhancedPrompt,
     setCurrentImages, 
     addToHistory,
+    selectedImage,
     setSelectedImage,
     isGenerating, 
     setIsGenerating,
     aspectRatio,
     setAspectRatio,
     quality,
-    setQuality,
     clearSession,
   } = useGeneration()
 
   const [isInitializingPrompt, setIsInitializingPrompt] = useState(false)
-  const [promptFocused, setPromptFocused] = useState(false)
+  // On mobile, collapse the prompt after generation / when tapping outside
+  const [mobilePromptOpen, setMobilePromptOpen] = useState(true)
+
+  // Prefer collapsed prompt once results first appear on mobile
+  useEffect(() => {
+    if (currentImages.length === 0) return
+    if (typeof window === "undefined") return
+    if (window.matchMedia("(max-width: 639px)").matches) {
+      setMobilePromptOpen(false)
+    }
+  }, [currentImages.length > 0]) // eslint-disable-line react-hooks/exhaustive-deps -- collapse when results appear, not on every length change
+
+  // Tap outside the prompt area on mobile collapses it when results are visible
+  useEffect(() => {
+    if (!mobilePromptOpen || currentImages.length === 0 || isGenerating) return
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (typeof window !== "undefined" && window.matchMedia("(min-width: 640px)").matches) {
+        return
+      }
+      const target = e.target as HTMLElement | null
+      if (!target) return
+      if (target.closest("[data-prompt-area]")) return
+      if (target.closest("[data-lightbox]")) return
+      setMobilePromptOpen(false)
+    }
+
+    document.addEventListener("pointerdown", onPointerDown)
+    return () => document.removeEventListener("pointerdown", onPointerDown)
+  }, [mobilePromptOpen, currentImages.length, isGenerating])
 
   // Set aspect ratio based on profile orientation (run once on mount if profile available)
   useEffect(() => {
@@ -82,6 +110,8 @@ export function AutoGenerationStudio() {
 
   const handleGenerate = useCallback(async () => {
     if (isGenerating || !prompt.trim()) return
+
+    const referenceImageUrl = selectedImage?.url
     
     setIsGenerating(true)
     setSelectedImage(null)
@@ -93,7 +123,9 @@ export function AutoGenerationStudio() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userInput: prompt,
+          userInput: referenceImageUrl
+            ? `Create four alternative variations of the selected artwork. User edit instructions: ${prompt}`
+            : prompt,
           styleProfile: profile || {
             palettes: ["warm-sunset"],
             styles: ["realistic"],
@@ -107,7 +139,7 @@ export function AutoGenerationStudio() {
       const enhanced: EnhancePromptResponse = await enhanceRes.json()
       setEnhancedPrompt(enhanced.enhancedPrompt)
 
-      // Step 2: Generate images with streaming
+      // Step 2: Generate images with streaming (edit selected image when refining)
       const genRes = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -116,6 +148,7 @@ export function AutoGenerationStudio() {
           aspectRatio,
           count: 4,
           quality,
+          ...(referenceImageUrl ? { referenceImageUrl } : {}),
         }),
       })
 
@@ -164,8 +197,12 @@ export function AutoGenerationStudio() {
       console.error("Generation failed:", error)
     } finally {
       setIsGenerating(false)
+      // Collapse prompt on mobile so the gallery can use the viewport
+      if (typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches) {
+        setMobilePromptOpen(false)
+      }
     }
-  }, [profile, prompt, isGenerating, setIsGenerating, setSelectedImage, setCurrentImages, aspectRatio, setEnhancedPrompt, addToHistory, quality])
+  }, [profile, prompt, isGenerating, setIsGenerating, selectedImage, setSelectedImage, setCurrentImages, aspectRatio, setEnhancedPrompt, addToHistory, quality])
 
   // Redirect if no profile
   useEffect(() => {
@@ -210,6 +247,17 @@ export function AutoGenerationStudio() {
             <h1 className="font-heading text-base font-semibold tracking-tight text-foreground sm:text-xl">
               Canvas
             </h1>
+            {selectedImage && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedImage(null)}
+                className="h-7 rounded-full border-muse-taupe/30 px-2.5 text-[11px] font-medium text-muse-brown hover:bg-muse-selected/30 sm:h-8 sm:px-3 sm:text-xs"
+              >
+                Unselect
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-1 text-xs text-muted-foreground justify-end">
@@ -254,32 +302,83 @@ export function AutoGenerationStudio() {
       </div>
 
       {/* Canvas */}
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-0 flex-1 overflow-hidden">
         <ResultsPanel />
       </div>
 
-      {/* Prompt + refine (refine rises from behind when prompt is active) */}
-      <div className="shrink-0 border-t border-muse-taupe/10 px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
+      {/* Prompt — full on desktop; collapsible Edit control on mobile after generation */}
+      <div
+        data-prompt-area
+        className="shrink-0 border-t border-muse-taupe/10 px-3 pb-3 pt-2 sm:px-4 sm:pb-4"
+      >
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
           className="relative mx-auto w-full max-w-3xl"
         >
-          <RefineDirections promptActive={promptFocused} />
-          <MusePromptBox
-            value={prompt}
-            onValueChange={setPrompt}
-            onSend={handleGenerate}
-            isGenerating={isGenerating}
-            isInitializing={isInitializingPrompt}
-            aspectRatio={aspectRatio}
-            onAspectRatioChange={setAspectRatio}
-            quality={quality}
-            onQualityChange={setQuality}
-            onFocusChange={setPromptFocused}
-            placeholder="Edit your prompt or describe what you'd like to create…"
-          />
+          {/* Mobile collapsed state */}
+          <div className="sm:hidden">
+            <AnimatePresence mode="wait" initial={false}>
+              {!mobilePromptOpen && currentImages.length > 0 && !isGenerating && !isInitializingPrompt ? (
+                <motion.div
+                  key="edit-collapsed"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  className="flex justify-end"
+                >
+                  <Button
+                    type="button"
+                    onClick={() => setMobilePromptOpen(true)}
+                    className="h-10 shrink-0 rounded-full bg-muse-peach px-6 text-muse-brown shadow-sm hover:bg-muse-selected"
+                  >
+                    Edit
+                  </Button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="prompt-expanded"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                >
+                  <MusePromptBox
+                    value={prompt}
+                    onValueChange={setPrompt}
+                    onSend={handleGenerate}
+                    isGenerating={isGenerating}
+                    isInitializing={isInitializingPrompt}
+                    aspectRatio={aspectRatio}
+                    onAspectRatioChange={setAspectRatio}
+                    placeholder={
+                      selectedImage
+                        ? "Describe how to change this artwork into new alternatives…"
+                        : "Edit your prompt or describe what you'd like to create…"
+                    }
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Desktop always shows the prompt */}
+          <div className="hidden sm:block">
+            <MusePromptBox
+              value={prompt}
+              onValueChange={setPrompt}
+              onSend={handleGenerate}
+              isGenerating={isGenerating}
+              isInitializing={isInitializingPrompt}
+              aspectRatio={aspectRatio}
+              onAspectRatioChange={setAspectRatio}
+              placeholder={
+                selectedImage
+                  ? "Describe how to change this artwork into new alternatives…"
+                  : "Edit your prompt or describe what you'd like to create…"
+              }
+            />
+          </div>
         </motion.div>
       </div>
     </div>

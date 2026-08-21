@@ -48,11 +48,23 @@ export function SiteHeader() {
           ))}
         </div>
 
-        {/* Cart Icon */}
-        <div className="flex items-center gap-4">
+        {/* Cart + checkout CTA */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {itemCount > 0 && (
+            <Link
+              href="/cart"
+              className={cn(
+                "inline-flex items-center rounded-full bg-muse-brown px-3 py-1.5 text-xs font-medium tracking-wide text-muse-floral transition-colors hover:bg-muse-brown/90 sm:text-sm",
+                pathname === "/cart" && "ring-2 ring-muse-brown/30 ring-offset-2 ring-offset-background"
+              )}
+            >
+              Go to checkout
+            </Link>
+          )}
           <Link
             href="/cart"
             className="relative p-2 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={itemCount > 0 ? `Cart, ${itemCount} items` : "Cart"}
           >
             <ShoppingBag className="h-5 w-5" />
             {itemCount > 0 && (
@@ -89,6 +101,15 @@ export function SiteHeader() {
                 {link.label}
               </Link>
             ))}
+            {itemCount > 0 && (
+              <Link
+                href="/cart"
+                onClick={() => setMobileMenuOpen(false)}
+                className="inline-flex w-fit items-center rounded-full bg-muse-brown px-3 py-1.5 text-sm font-medium tracking-wide text-muse-floral transition-colors hover:bg-muse-brown/90"
+              >
+                Go to checkout
+              </Link>
+            )}
           </nav>
         </div>
       )}

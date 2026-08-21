@@ -56,6 +56,8 @@ export interface GenerateRequest {
   aspectRatio: string
   count: number
   quality: "standard" | "premium"
+  /** When set, generate variations by editing this source image */
+  referenceImageUrl?: string
 }
 
 export interface GenerateResponse {

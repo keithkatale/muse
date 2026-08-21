@@ -4,11 +4,11 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { ImageIcon, Loader2, ArrowRight, ZoomIn } from "lucide-react"
+import { ImageIcon, Loader2, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useGeneration } from "@/lib/contexts"
 import { selectionImage } from "@/lib/brand"
-import { aspectRatioClass, cn } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import type { GeneratedImage } from "@/lib/types"
 import { ImageLightbox } from "./image-lightbox"
 
@@ -23,8 +23,48 @@ function tileAspectRatio(img: GeneratedImage | null, fallback: string): string {
   return map[fallback] ?? "3 / 4"
 }
 
-export function ResultsPanel() {
+function ContinueOnImage({
+  imageId,
+  compact,
+}: {
+  imageId: string
+  compact?: boolean
+}) {
   const router = useRouter()
+
+  return (
+    <>
+      <div className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-muse-peach/40" />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className={cn(
+          "absolute inset-x-0 bottom-0 z-10 flex justify-center",
+          compact ? "pb-1.5" : "pb-4"
+        )}
+      >
+        <Button
+          size="sm"
+          className={cn(
+            "rounded-full bg-muse-peach text-muse-brown shadow-lg hover:bg-muse-selected",
+            compact
+              ? "h-8 w-[90%] max-w-none px-2 text-xs font-semibold"
+              : "px-5"
+          )}
+          onClick={(e) => {
+            e.stopPropagation()
+            router.push(`/configure/${imageId}`)
+          }}
+        >
+          Continue
+          {!compact && <ArrowRight className="ml-1.5 h-3.5 w-3.5" />}
+        </Button>
+      </motion.div>
+    </>
+  )
+}
+
+export function ResultsPanel() {
   const {
     currentImages,
     selectedImage,
@@ -34,7 +74,6 @@ export function ResultsPanel() {
   } = useGeneration()
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-  const skeletonAspect = aspectRatioClass(aspectRatio)
 
   if (currentImages.length === 0 && !isGenerating) {
     return (
@@ -57,11 +96,22 @@ export function ResultsPanel() {
   return (
     <>
       <div className="flex h-full w-full flex-col items-center justify-center px-2 sm:px-3">
-        {/* Mobile View: 2x2 Grid with selected aspect ratio */}
-        <div className="flex sm:hidden h-full w-full items-center justify-center">
+        {/* Mobile / narrow: adaptive 2×2 grid — tap selects + zooms */}
+        <div className="flex h-full w-full items-center justify-center lg:hidden">
           <div
-            style={{ aspectRatio: tileAspectRatio(null, aspectRatio) }}
-            className="grid grid-cols-2 grid-rows-2 gap-2 w-full h-auto max-h-[58vh] max-w-[340px] xs:max-w-[380px]"
+            className={cn(
+              "grid w-full max-w-lg grid-cols-2 gap-2",
+              "max-h-[min(72vh,100%)]"
+            )}
+            style={{
+              aspectRatio:
+                aspectRatio === "16:9" || aspectRatio === "4:3"
+                  ? "4 / 3"
+                  : aspectRatio === "1:1"
+                    ? "1 / 1"
+                    : "3 / 4",
+              maxWidth: "min(100%, 28rem)",
+            }}
           >
             <AnimatePresence mode="wait">
               {isGenerating
@@ -72,7 +122,7 @@ export function ResultsPanel() {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: i * 0.05, duration: 0.2 }}
-                      className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-muse-taupe/30 bg-muse-floral/30"
+                      className="relative flex min-h-0 items-center justify-center overflow-hidden rounded-lg border border-dashed border-muse-taupe/30 bg-muse-floral/30"
                     >
                       <Loader2 className="h-5 w-5 animate-spin text-muse-taupe/50" />
                     </motion.div>
@@ -86,8 +136,66 @@ export function ResultsPanel() {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.3, delay: i * 0.05 }}
                         className={cn(
-                          "group relative h-full w-full overflow-hidden rounded-lg transition-all border border-muse-taupe/10",
+                          "group relative min-h-0 overflow-hidden rounded-lg border border-muse-taupe/10 transition-all",
                           isSelected ? "ring-2 ring-muse-peach" : "hover:border-muse-peach/40"
+                        )}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedImage(img)
+                            setLightboxIndex(i)
+                          }}
+                          className="relative h-full w-full"
+                        >
+                          <Image
+                            src={img.url}
+                            alt={`Generated variant ${i + 1}`}
+                            fill
+                            sizes="(max-width: 1024px) 45vw, 25vw"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </button>
+
+                        {isSelected && <ContinueOnImage imageId={img.id} compact />}
+                      </motion.div>
+                    )
+                  })}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Large desktop: horizontal row with sideways scroll when needed */}
+        <div className="hidden h-full max-h-[85%] w-full items-center lg:flex">
+          <div className="mx-auto flex h-full max-w-full items-center gap-2 overflow-x-auto overflow-y-hidden px-2 py-1 [scrollbar-width:thin]">
+            <AnimatePresence mode="wait">
+              {isGenerating
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <motion.div
+                      key={`skeleton-desktop-${i}`}
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ delay: i * 0.06, duration: 0.2 }}
+                      style={{ aspectRatio: tileAspectRatio(null, aspectRatio) }}
+                      className="relative flex h-full w-auto shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-border/40 bg-muted/40"
+                    >
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </motion.div>
+                  ))
+                : currentImages.map((img, i) => {
+                    const isSelected = selectedImage?.id === img.id
+                    return (
+                      <motion.div
+                        key={`desktop-${img.id}`}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: i * 0.06 }}
+                        style={{ aspectRatio: tileAspectRatio(img, aspectRatio) }}
+                        className={cn(
+                          "group relative h-full w-auto max-h-full shrink-0 overflow-hidden rounded-md",
+                          selectionImage(isSelected)
                         )}
                       >
                         <button
@@ -99,140 +207,31 @@ export function ResultsPanel() {
                             src={img.url}
                             alt={`Generated variant ${i + 1}`}
                             fill
-                            sizes="45vw"
-                            className="object-cover"
+                            sizes="25vw"
+                            className="object-contain"
                             unoptimized
                           />
                         </button>
 
-                        <button
-                          type="button"
-                          aria-label="Zoom in"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setLightboxIndex(i)
-                          }}
-                          className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-full bg-black/45 text-white opacity-90 shadow-sm backdrop-blur-sm transition-opacity"
-                        >
-                          <ZoomIn className="size-3.5" />
-                        </button>
+                        {isSelected && <ContinueOnImage imageId={img.id} />}
                       </motion.div>
                     )
                   })}
             </AnimatePresence>
           </div>
         </div>
-
-        {/* Desktop View: Horizontal Flex Row */}
-        <div className="hidden sm:flex h-[82%] max-h-[82%] items-center justify-center gap-1.5 sm:gap-2">
-          <AnimatePresence mode="wait">
-            {isGenerating
-              ? Array.from({ length: 4 }).map((_, i) => (
-                  <motion.div
-                    key={`skeleton-desktop-${i}`}
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ delay: i * 0.06, duration: 0.2 }}
-                    style={{ aspectRatio: tileAspectRatio(null, aspectRatio) }}
-                    className={cn(
-                      skeletonAspect,
-                      "relative flex h-full w-auto shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-border/40 bg-muted/40"
-                    )}
-                  >
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </motion.div>
-                ))
-              : currentImages.map((img, i) => {
-                  const isSelected = selectedImage?.id === img.id
-                  return (
-                    <motion.div
-                      key={`desktop-${img.id}`}
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3, delay: i * 0.06 }}
-                      style={{ aspectRatio: tileAspectRatio(img, aspectRatio) }}
-                      className={cn(
-                        "group relative h-full w-auto shrink-0 overflow-hidden rounded-md",
-                        selectionImage(isSelected)
-                      )}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setSelectedImage(isSelected ? null : img)}
-                        className="relative h-full w-full"
-                      >
-                        <Image
-                          src={img.url}
-                          alt={`Generated variant ${i + 1}`}
-                          fill
-                          sizes="25vw"
-                          className="object-contain"
-                          unoptimized
-                        />
-                      </button>
-
-                      <button
-                        type="button"
-                        aria-label="Zoom in"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setLightboxIndex(i)
-                        }}
-                        className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-full bg-black/45 text-white opacity-80 shadow-md backdrop-blur-sm transition-opacity hover:bg-black/60 hover:opacity-100 sm:right-2 sm:top-2 sm:size-8"
-                      >
-                        <ZoomIn className="size-3.5 sm:size-4" />
-                      </button>
-
-                      {isSelected && (
-                        <>
-                          <div className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-muse-peach/40" />
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="absolute inset-x-0 bottom-0 flex justify-center pb-3 sm:pb-4"
-                          >
-                            <Button
-                              size="sm"
-                              className="rounded-full bg-muse-peach px-5 text-muse-brown shadow-lg hover:bg-muse-selected"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                router.push(`/configure/${img.id}`)
-                              }}
-                            >
-                              Continue
-                              <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                            </Button>
-                          </motion.div>
-                        </>
-                      )}
-                    </motion.div>
-                  )
-                })}
-          </AnimatePresence>
-        </div>
       </div>
-
-      {/* Mobile-only "Continue" floating action bar when a variant is selected */}
-      {selectedImage && (
-        <div className="absolute bottom-2 inset-x-0 flex justify-center px-4 sm:hidden z-20">
-          <Button
-            size="lg"
-            className="w-full max-w-xs rounded-full bg-muse-peach text-muse-brown font-semibold shadow-xl hover:bg-muse-selected h-12 text-sm transition-all"
-            onClick={() => router.push(`/configure/${selectedImage.id}`)}
-          >
-            Continue with Selected Art
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      )}
 
       {lightboxIndex !== null && currentImages.length > 0 && (
         <ImageLightbox
           images={currentImages}
           index={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
-          onIndexChange={setLightboxIndex}
+          onIndexChange={(idx) => {
+            setLightboxIndex(idx)
+            const next = currentImages[idx]
+            if (next) setSelectedImage(next)
+          }}
         />
       )}
     </>

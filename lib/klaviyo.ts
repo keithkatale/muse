@@ -133,12 +133,9 @@ export async function syncLeadToKlaviyo(
       const profileId = json.data?.id as string | undefined
       console.log(`[Klaviyo] Successfully created profile. ID: ${profileId}`)
 
+      // Sets consent + list membership together. Do NOT call subscribeProfileToList
+      // afterward on a double-opt-in list — that only sends a confirmation email.
       await subscribeEmailMarketing(normalizedEmail)
-
-      const listId = process.env.KLAVIYO_LIST_ID
-      if (listId && profileId) {
-        await subscribeProfileToList(profileId, listId)
-      }
 
       return { success: true, profileId }
     }
@@ -176,11 +173,6 @@ export async function syncLeadToKlaviyo(
       console.log(`[Klaviyo] Updated existing profile. ID: ${duplicateId}`)
 
       await subscribeEmailMarketing(normalizedEmail)
-
-      const listId = process.env.KLAVIYO_LIST_ID
-      if (listId) {
-        await subscribeProfileToList(duplicateId, listId)
-      }
 
       return { success: true, profileId: duplicateId }
     }
@@ -232,9 +224,9 @@ export async function subscribeProfileToList(profileId: string, listId: string):
 }
 
 /**
- * Explicitly opt the profile into email marketing (required for reliable flow delivery).
- * Uses Bulk Subscribe Profiles — adding to a list alone leaves consent as NEVER_SUBSCRIBED.
- * When the list is double opt-in, pass historicalImport=true only if you already collected consent.
+ * Explicitly opt the profile into email marketing.
+ * - New profiles: historical import (no double-opt-in email) with a second-precision timestamp
+ * - Already subscribed: no-op (re-importing consent fails and list-add alone triggers DOI confirms)
  */
 export async function subscribeEmailMarketing(
   email: string,
@@ -247,51 +239,76 @@ export async function subscribeEmailMarketing(
   if (!normalizedEmail.includes("@")) return false
 
   const listId = options?.listId || process.env.KLAVIYO_LIST_ID
-  const historicalImport = options?.historicalImport ?? true
-  const consentedAt = new Date().toISOString().replace("Z", "+00:00")
+  const source = options?.source || "Muse Style Quiz"
 
-  const marketingConsent: Record<string, string> = {
-    consent: "SUBSCRIBED",
-  }
-  if (historicalImport) {
-    marketingConsent.consented_at = consentedAt
+  // Skip if already subscribed — re-posting historical consent errors and
+  // falling back to list membership on a DOI list sends a confirmation email.
+  try {
+    const existing = await fetch(
+      `${KLAVIYO_BASE}/profiles/?filter=${encodeURIComponent(`equals(email,"${normalizedEmail}")`)}&additional-fields[profile]=subscriptions`,
+      {
+        headers: {
+          Authorization: `Klaviyo-API-Key ${apiKey}`,
+          accept: "application/vnd.api+json",
+          revision: KLAVIYO_REVISION,
+        },
+      }
+    )
+    if (existing.ok) {
+      const json = await existing.json()
+      const consent =
+        json.data?.[0]?.attributes?.subscriptions?.email?.marketing?.consent
+      if (consent === "SUBSCRIBED") {
+        console.log(`[Klaviyo] ${normalizedEmail} already subscribed — skipping consent upsert`)
+        return true
+      }
+    }
+  } catch (error) {
+    console.warn("[Klaviyo] Could not pre-check subscription status:", error)
   }
 
-  const body: Record<string, unknown> = {
-    data: {
-      type: "profile-subscription-bulk-create-job",
-      attributes: {
-        custom_source: options?.source || "Muse Style Quiz",
-        ...(historicalImport ? { historical_import: true } : {}),
-        profiles: {
-          data: [
-            {
-              type: "profile",
-              attributes: {
-                email: normalizedEmail,
-                subscriptions: {
-                  email: {
-                    marketing: marketingConsent,
+  // Klaviyo rejects millisecond timestamps (…27.509+00:00) for historical import.
+  const consentedAt = new Date().toISOString().replace(/\.\d{3}Z$/, "+00:00")
+  const useHistorical = options?.historicalImport ?? true
+
+  const buildBody = (historical: boolean) => {
+    const marketing: Record<string, string> = { consent: "SUBSCRIBED" }
+    if (historical) marketing.consented_at = consentedAt
+
+    return {
+      data: {
+        type: "profile-subscription-bulk-create-job",
+        attributes: {
+          custom_source: source,
+          ...(historical ? { historical_import: true } : {}),
+          profiles: {
+            data: [
+              {
+                type: "profile",
+                attributes: {
+                  email: normalizedEmail,
+                  subscriptions: {
+                    email: { marketing },
                   },
                 },
               },
-            },
-          ],
+            ],
+          },
         },
-      },
-      ...(listId
-        ? {
-            relationships: {
-              list: {
-                data: { type: "list", id: listId },
+        ...(listId
+          ? {
+              relationships: {
+                list: {
+                  data: { type: "list", id: listId },
+                },
               },
-            },
-          }
-        : {}),
-    },
+            }
+          : {}),
+      },
+    }
   }
 
-  try {
+  const postSubscribe = async (historical: boolean) => {
     const response = await fetch(`${KLAVIYO_BASE}/profile-subscription-bulk-create-jobs/`, {
       method: "POST",
       headers: {
@@ -299,10 +316,32 @@ export async function subscribeEmailMarketing(
         accept: "application/vnd.api+json",
         "content-type": "application/vnd.api+json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(buildBody(historical)),
     })
+    return response
+  }
 
-    // 202 Accepted = job queued
+  try {
+    let response = await postSubscribe(useHistorical)
+
+    // If historical import is rejected (bad timestamp / already has older consent),
+    // do NOT fall back to a DOI list add — that only emails a confirmation link.
+    if (!response.ok && useHistorical) {
+      const errorText = await response.text()
+      console.warn(
+        `[Klaviyo] Historical subscribe failed (${response.status}): ${errorText.slice(0, 300)}`
+      )
+      // Retry once without historical only when there is no list (avoids DOI confirm mail).
+      if (!listId) {
+        response = await postSubscribe(false)
+      } else {
+        console.warn(
+          "[Klaviyo] Skipping DOI fallback subscribe — profile can still receive flow email if consent exists"
+        )
+        return false
+      }
+    }
+
     if (response.status === 202 || response.ok) {
       console.log(`[Klaviyo] Queued email marketing subscribe for ${normalizedEmail}`)
       return true
