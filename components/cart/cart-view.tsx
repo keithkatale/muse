@@ -9,6 +9,7 @@ import { Trash2, ArrowRight, ShoppingBag, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart, useStyleProfile } from "@/lib/contexts"
 import { formatPrice } from "@/lib/mock-data"
+import { trackLifecycle } from "@/lib/track-lifecycle"
 
 export function CartView() {
   const router = useRouter()
@@ -17,6 +18,11 @@ export function CartView() {
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [email, setEmail] = useState("")
   const [emailError, setEmailError] = useState<string | null>(null)
+
+  const validateEmail = (emailStr: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(emailStr)
+  }
 
   // Initialize email on mount
   useEffect(() => {
@@ -30,10 +36,19 @@ export function CartView() {
     }
   }, [profile])
 
-  const validateEmail = (emailStr: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(emailStr)
-  }
+  // If they leave the cart with items, start the abandoned-checkout drip.
+  useEffect(() => {
+    if (!cart?.items.length || !email || !validateEmail(email)) return
+    const key = `muse-tracked-cart-${email.toLowerCase()}-${cart.id}`
+    if (sessionStorage.getItem(key)) return
+    sessionStorage.setItem(key, "1")
+    trackLifecycle({
+      email,
+      event: "started_checkout",
+      items: cart.items,
+      checkoutUrl: "/cart",
+    })
+  }, [cart, email])
 
   const handleEmailChange = (val: string) => {
     setEmail(val)

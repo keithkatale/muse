@@ -16,6 +16,7 @@ import { RoomStep } from "./steps/room-step"
 import { OrientationStep } from "./steps/orientation-step"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { trackLifecycle } from "@/lib/track-lifecycle"
 
 const TOTAL_STEPS = 7
 
@@ -35,6 +36,7 @@ export function StyleQuiz() {
 
   const mobileNavRef = useRef<HTMLDivElement>(null)
   const prevCanProceed = useRef(false)
+  const quizStartTracked = useRef(false)
 
   // Preload images for the next image-heavy step while the user is still on the prior step
   useEffect(() => {
@@ -69,6 +71,16 @@ export function StyleQuiz() {
 
   const ready = canProceed()
 
+  const stepLabels = [
+    "Email",
+    "Color Palette",
+    "Art Style",
+    "Subject Matter",
+    "Mood",
+    "Room",
+    "Orientation",
+  ]
+
   // On mobile, scroll Continue into view when the user first becomes able to proceed
   useEffect(() => {
     if (ready && !prevCanProceed.current) {
@@ -89,52 +101,75 @@ export function StyleQuiz() {
   }, [step])
 
   const handleNext = async () => {
-    if (step < TOTAL_STEPS - 1) {
-      setStep(step + 1)
-    } else {
-      const profile: StyleProfile = {
-        email,
-        palettes,
+    const currentProfile = {
+      email,
+      palettes,
+      styles,
+      subjects,
+      mood,
+      room,
+      orientation,
+    }
+    const quizPayload = {
+      email,
+      profile: {
         styles,
         subjects,
+        palettes,
         mood,
         room,
         orientation,
-      }
-      setProfile(profile)
-
-      setCurrentImages([])
-      setSelectedImage(null)
-      setPrompt("")
-      setEnhancedPrompt("")
-
-      try {
-        await fetch("/api/store-lead", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, profile }),
-        })
-      } catch (error) {
-        console.error("Failed to store lead:", error)
-      }
-
-      router.push("/create")
+      },
     }
+
+    if (step < TOTAL_STEPS - 1) {
+      setProfile(currentProfile)
+
+      if (step === 0 && !quizStartTracked.current) {
+        quizStartTracked.current = true
+        trackLifecycle({
+          ...quizPayload,
+          event: "started_quiz",
+          quizStep: 1,
+          quizStepLabel: "Email",
+        })
+      } else if (step > 0) {
+        trackLifecycle({
+          ...quizPayload,
+          event: "quiz_progress",
+          quizStep: step + 1,
+          quizStepLabel: stepLabels[step],
+        })
+      }
+
+      setStep(step + 1)
+      return
+    }
+
+    const profile: StyleProfile = currentProfile
+    setProfile(profile)
+
+    setCurrentImages([])
+    setSelectedImage(null)
+    setPrompt("")
+    setEnhancedPrompt("")
+
+    try {
+      await fetch("/api/store-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, profile }),
+      })
+    } catch (error) {
+      console.error("Failed to store lead:", error)
+    }
+
+    router.push("/create")
   }
 
   const handleBack = () => {
     if (step > 0) setStep(step - 1)
   }
-
-  const stepLabels = [
-    "Email",
-    "Color Palette",
-    "Art Style",
-    "Subject Matter",
-    "Mood",
-    "Room",
-    "Orientation",
-  ]
 
   const nextLabel = step === TOTAL_STEPS - 1 ? "Generate My Art" : "Continue"
 

@@ -14,6 +14,7 @@ import {
 import { getShopifyVariantId } from "@/lib/product-mapping"
 import { configuratorSelectionCard } from "@/lib/brand"
 import { cn } from "@/lib/utils"
+import { trackLifecycle } from "@/lib/track-lifecycle"
 import { ArtPreview } from "./art-preview"
 import { GALLERY_ITEMS } from "@/lib/mock-data"
 
@@ -87,6 +88,26 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
       price: totalPrice,
       quantity: 1,
     })
+    const email =
+      profile?.email ||
+      (typeof window !== "undefined" ? localStorage.getItem("muse-checkout-email") : null)
+    trackLifecycle({
+      email,
+      event: "added_to_cart",
+      items: [
+        {
+          imageId: image.id,
+          imageUrl: image.url,
+          title: "Custom AI Art Print",
+          size: SIZES.find((s) => s.id === size)?.label || size,
+          medium: MEDIUMS.find((m) => m.id === medium)?.label || medium,
+          frame: FRAMES.find((f) => f.id === frame)?.label || frame,
+          mat: MATS.find((m) => m.id === mat)?.label || mat,
+          price: totalPrice,
+          quantity: 1,
+        },
+      ],
+    })
     toast.success("Added to cart", {
       description: "Your custom art print has been added.",
       action: {
@@ -94,7 +115,7 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
         onClick: () => router.push("/cart"),
       },
     })
-  }, [image, size, medium, frame, mat, totalPrice, addItem, router])
+  }, [image, size, medium, frame, mat, totalPrice, addItem, router, profile?.email])
 
   if (!image) {
     return (
@@ -110,8 +131,33 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
     )
   }
 
+  const checkoutDetails = (
+    <div className="mt-2 text-xs text-muted-foreground">
+      {SIZES.find((s) => s.id === size)?.label} &middot;{" "}
+      {MEDIUMS.find((m) => m.id === medium)?.label} &middot;{" "}
+      {frame === null ? "No Frame Selected" : FRAMES.find((f) => f.id === frame)?.label}
+      {frame !== null && frame !== "none" && mat !== "none" ? ` \u00b7 ${MATS.find((m) => m.id === mat)?.label}` : ""}
+    </div>
+  )
+
+  const addToCartButton = (
+    <Button
+      onClick={handleAddToCart}
+      size="lg"
+      variant={frame === null ? "outline" : "default"}
+      className={cn(
+        "w-full transition-all duration-300",
+        frame === null ? "border-rose-200 text-rose-500 hover:bg-rose-50/20" : ""
+      )}
+      disabled={frame === null}
+    >
+      <ShoppingBag className="mr-2 h-4 w-4" />
+      {frame === null ? "Please Select a Frame Option" : `Add to Cart — ${formatPrice(totalPrice)}`}
+    </Button>
+  )
+
   return (
-    <div className="min-h-[calc(100vh-73px)]">
+    <div className="min-h-[calc(100vh-73px)] pb-28 lg:pb-0">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -290,41 +336,56 @@ export function ProductConfigurator({ imageId }: { imageId: string }) {
               </motion.div>
             )}
 
-            {/* Price Summary */}
-            <div className="rounded-lg border border-[#E8DDD4] bg-muse-floral p-5">
-              <div className="flex items-baseline justify-between">
-                <span className="text-sm text-muted-foreground">Total</span>
-                <span className="font-heading text-3xl tracking-tight text-foreground">
-                  {formatPrice(totalPrice)}
-                </span>
+            {/* Price + Add to Cart — desktop sidebar only; mobile uses sticky footer */}
+            <div className="hidden lg:flex lg:flex-col lg:gap-8">
+              <div className="rounded-lg border border-[#E8DDD4] bg-muse-floral p-5">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted-foreground">Total</span>
+                  <span className="font-heading text-3xl tracking-tight text-foreground">
+                    {formatPrice(totalPrice)}
+                  </span>
+                </div>
+                {checkoutDetails}
+                <div className="mt-3 flex items-center gap-1.5 text-xs text-muse-taupe">
+                  <Truck className="h-3.5 w-3.5" />
+                  Free shipping
+                </div>
               </div>
-              <div className="mt-2 text-xs text-muted-foreground">
-                {SIZES.find((s) => s.id === size)?.label} &middot;{" "}
-                {MEDIUMS.find((m) => m.id === medium)?.label} &middot;{" "}
-                {frame === null ? "No Frame Selected" : FRAMES.find((f) => f.id === frame)?.label}
-                {frame !== null && frame !== "none" && mat !== "none" ? ` \u00b7 ${MATS.find((m) => m.id === mat)?.label}` : ""}
-              </div>
-              <div className="mt-3 flex items-center gap-1.5 text-xs text-muse-taupe">
-                <Truck className="h-3.5 w-3.5" />
-                Free shipping
-              </div>
+              {addToCartButton}
             </div>
-
-            {/* Add to Cart */}
-            <Button
-              onClick={handleAddToCart}
-              size="lg"
-              variant={frame === null ? "outline" : "default"}
-              className={cn(
-                "w-full transition-all duration-300",
-                frame === null ? "border-rose-200 text-rose-500 hover:bg-rose-50/20" : ""
-              )}
-              disabled={frame === null}
-            >
-              <ShoppingBag className="mr-2 h-4 w-4" />
-              {frame === null ? "Please Select a Frame Option" : `Add to Cart — ${formatPrice(totalPrice)}`}
-            </Button>
           </motion.div>
+        </div>
+      </div>
+
+      {/* Mobile: total + add to cart stay at the bottom of the screen */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E8DDD4] bg-background/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-xs text-muted-foreground">Total</span>
+              <span className="font-heading text-xl tracking-tight text-foreground">
+                {formatPrice(totalPrice)}
+              </span>
+            </div>
+            {checkoutDetails}
+            <div className="mt-1 flex items-center gap-1.5 text-[10px] text-muse-taupe">
+              <Truck className="h-3 w-3" />
+              Free shipping
+            </div>
+          </div>
+          <Button
+            onClick={handleAddToCart}
+            size="lg"
+            variant={frame === null ? "outline" : "default"}
+            className={cn(
+              "h-11 shrink-0 px-4 transition-all duration-300",
+              frame === null ? "border-rose-200 text-rose-500 hover:bg-rose-50/20" : ""
+            )}
+            disabled={frame === null}
+          >
+            <ShoppingBag className="mr-1.5 h-4 w-4" />
+            {frame === null ? "Select Frame" : "Add to Cart"}
+          </Button>
         </div>
       </div>
     </div>

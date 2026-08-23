@@ -27,46 +27,41 @@ const SIZE_SCALES: Record<string, number> = {
   "30x40": 1.5,
 }
 
-// Frame styles (no shadow on art overlay)
-const FRAME_STYLES: Record<string, { 
-  borderWidth: string
+// Frame moulding as a % of the artwork so thickness stays proportional
+const FRAME_STYLES: Record<string, {
+  moulding: string
   borderColor: string
-  boxShadow: string
-  background?: string
+  background: string
 }> = {
-  "none": {
-    borderWidth: "0px",
+  none: {
+    moulding: "0%",
     borderColor: "transparent",
-    boxShadow: "none",
+    background: "transparent",
   },
-  "black": {
-    borderWidth: "8px",
+  black: {
+    moulding: "2.4%",
     borderColor: "#1a1a1a",
-    boxShadow: "none",
     background: "linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%)",
   },
-  "white": {
-    borderWidth: "8px",
-    borderColor: "#f8f8f8",
-    boxShadow: "none",
-    background: "linear-gradient(135deg, #ffffff 0%, #f8f8f8 50%, #f0f0f0 100%)",
+  white: {
+    moulding: "2.4%",
+    borderColor: "#f5f5f0",
+    background: "linear-gradient(135deg, #ffffff 0%, #f8f8f8 50%, #ecece6 100%)",
   },
-  "natural": {
-    borderWidth: "8px",
-    borderColor: "#d4a574",
-    boxShadow: "none",
+  natural: {
+    moulding: "2.6%",
+    borderColor: "#c4a882",
     background: "linear-gradient(135deg, #e0b589 0%, #d4a574 50%, #c89960 100%)",
   },
-  "walnut": {
-    borderWidth: "8px",
-    borderColor: "#5d4037",
-    boxShadow: "none",
+  walnut: {
+    moulding: "2.6%",
+    borderColor: "#5c3d2e",
     background: "linear-gradient(135deg, #6d4c41 0%, #5d4037 50%, #4e342e 100%)",
   },
-  "float": {
-    borderWidth: "0px",
-    borderColor: "transparent",
-    boxShadow: "none",
+  float: {
+    moulding: "1.1%",
+    borderColor: "#2a2a2a",
+    background: "linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 50%, #1a1a1a 100%)",
   },
 }
 
@@ -197,32 +192,31 @@ export function ArtPreview({
                 animate={{ scale: sizeScale }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 style={{
-                  ...frameStyle,
-                  borderWidth: hasFrame ? frameStyle.borderWidth : "0px",
-                  borderStyle: "solid",
-                  borderColor: frameStyle.borderColor,
-                  boxShadow: "0 16px 40px rgba(0,0,0,0.12)",
-                  background: frameStyle.background,
-                  borderRadius: frame === "float" ? "2px" : "0px",
+                  boxSizing: "border-box",
+                  width: "min(70%, 16.5rem)",
+                  padding: hasFrame ? frameStyle.moulding : "0%",
+                  background: hasFrame ? frameStyle.background : "transparent",
+                  boxShadow: hasFrame
+                    ? "inset 0 0 0 1px rgba(255,255,255,0.12), 0 12px 28px rgba(0,0,0,0.14)"
+                    : "0 12px 28px rgba(0,0,0,0.12)",
+                  borderRadius: frame === "float" ? "2px" : "1px",
                   willChange: "transform",
                 }}
                 className="relative overflow-hidden transition-all duration-300 transform-gpu"
               >
-                {/* Stable Artwork Mounting Container with fluid mat border growth */}
+                {/* Artwork + optional mat, inset by proportional frame moulding */}
                 <div 
-                  className="transition-all duration-300 ease-out flex items-center justify-center transform-gpu"
+                  className="flex items-center justify-center transition-all duration-300 ease-out transform-gpu"
                   style={{ 
-                    padding: hasMat ? "16px" : "0px",
+                    padding: hasMat ? "6%" : "0px",
                     backgroundColor: hasMat ? matColor : "transparent",
                     willChange: "padding, background-color"
                   }}
                 >
                   <div 
-                    className="relative transition-all duration-300 ease-out shadow-inner"
+                    className="relative w-full shadow-inner transition-all duration-300 ease-out"
                     style={{
-                      width: hasMat ? "200px" : "240px", // stable dimension scales
                       aspectRatio: imageRatio,
-                      willChange: "width"
                     }}
                   >
                     <Image
@@ -284,14 +278,14 @@ export function ArtPreview({
                   ease: [0.25, 0.1, 0.25, 1],
                 }}
                 style={{
-                  ...roomFrameStyle,
-                  borderWidth: roomHasFrame ? roomFrameStyle.borderWidth : "0px",
-                  borderStyle: "solid",
-                  borderColor: roomFrameStyle.borderColor,
+                  boxSizing: "border-box",
+                  padding: roomHasFrame ? roomFrameStyle.moulding : "0%",
+                  background: roomHasFrame ? roomFrameStyle.background : "transparent",
                   boxShadow: fillsExistingFrame
                     ? "none"
-                    : "0 8px 24px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.12)",
-                  background: roomFrameStyle.background,
+                    : roomHasFrame
+                      ? "inset 0 0 0 1px rgba(255,255,255,0.1), 0 6px 16px rgba(0,0,0,0.2)"
+                      : "0 8px 24px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.12)",
                   borderRadius: frame === "float" && !fillsExistingFrame ? "2px" : "0px",
                   position: "absolute",
                   transformOrigin: "center center",
@@ -302,7 +296,7 @@ export function ArtPreview({
               >
                 <div 
                   className={cn(
-                    "absolute inset-0 flex items-center justify-center transition-all duration-300 ease-out transform-gpu"
+                    "flex h-full w-full items-center justify-center transition-all duration-300 ease-out transform-gpu"
                   )}
                   style={{ 
                     padding: roomHasMat ? "5%" : (fillsExistingFrame ? "4%" : "0px"),
@@ -314,7 +308,7 @@ export function ArtPreview({
                     willChange: "padding, background-color"
                   }}
                 >
-                  <div className={cn("relative w-full h-full transition-all duration-300", (roomHasMat || fillsExistingFrame) && "shadow-inner")}>
+                  <div className={cn("relative h-full w-full transition-all duration-300", (roomHasMat || fillsExistingFrame) && "shadow-inner")}>
                     <Image
                       src={imageUrl}
                       alt="Art in room"

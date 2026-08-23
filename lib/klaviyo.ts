@@ -8,6 +8,44 @@
 const KLAVIYO_REVISION = "2024-10-15"
 const KLAVIYO_BASE = "https://a.klaviyo.com/api"
 
+/** Canonical public site — never localhost, including when the app is developed locally. */
+export const MUSE_PUBLIC_SITE_URL = "https://www.trymuselab.com"
+
+const LOCAL_HOST = /localhost|127\.0\.0\.1/i
+
+export function isPublicHttpUrl(value?: string | null): boolean {
+  if (!value) return false
+  try {
+    const url = new URL(value)
+    return /^https?:$/i.test(url.protocol) && !LOCAL_HOST.test(url.hostname)
+  } catch {
+    return false
+  }
+}
+
+export function getPublicSiteUrl(): string {
+  const candidates = [
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.SITE_URL,
+    process.env.NEXT_PUBLIC_APP_URL,
+  ]
+  for (const raw of candidates) {
+    const value = raw?.trim().replace(/\/$/, "")
+    if (!value) continue
+    const normalized = value.startsWith("http") ? value : `https://${value}`
+    if (!isPublicHttpUrl(normalized)) continue
+    return normalized
+  }
+  return MUSE_PUBLIC_SITE_URL
+}
+
+/** Rewrite localhost / relative URLs so Klaviyo emails never get a local CTA. */
+export function publicOrSiteUrl(value?: string | null, fallbackPath = "/create"): string {
+  if (isPublicHttpUrl(value)) return value as string
+  const path = fallbackPath.startsWith("/") ? fallbackPath : `/${fallbackPath}`
+  return `${getPublicSiteUrl()}${path}`
+}
+
 export interface KlaviyoOrderItem {
   ProductID: string
   ProductName: string
@@ -430,6 +468,74 @@ export async function trackKlaviyoEvent(
   }
 }
 
+export async function trackStartedStyleQuiz(
+  email: string,
+  extras?: {
+    quizStep?: number
+    quizStepLabel?: string
+    styles?: string[]
+    subjects?: string[]
+    palettes?: string[]
+    mood?: string | null
+    room?: string | null
+    orientation?: string | null
+  }
+) {
+  return trackKlaviyoEvent({
+    metric: "Started Style Quiz",
+    email,
+    uniqueId: `quiz-start-${email.trim().toLowerCase()}-${Date.now()}`,
+    properties: {
+      QuizStep: extras?.quizStep ?? 1,
+      QuizStepLabel: extras?.quizStepLabel ?? "Email",
+      Styles: extras?.styles || [],
+      Subjects: extras?.subjects || [],
+      Palettes: extras?.palettes || [],
+      Mood: extras?.mood || "",
+      Room: extras?.room || "",
+      Orientation: extras?.orientation || "",
+      Source: "Muse Style Quiz",
+      SiteURL: getPublicSiteUrl(),
+      QuizURL: `${getPublicSiteUrl()}/discover`,
+      CreateURL: `${getPublicSiteUrl()}/create`,
+    },
+  })
+}
+
+export async function trackStyleQuizProgress(
+  email: string,
+  extras: {
+    quizStep: number
+    quizStepLabel: string
+    styles?: string[]
+    subjects?: string[]
+    palettes?: string[]
+    mood?: string | null
+    room?: string | null
+    orientation?: string | null
+  }
+) {
+  return trackKlaviyoEvent({
+    metric: "Style Quiz Progress",
+    email,
+    uniqueId: `quiz-progress-${email.trim().toLowerCase()}-${extras.quizStep}-${Date.now()}`,
+    properties: {
+      QuizStep: extras.quizStep,
+      QuizStepLabel: extras.quizStepLabel,
+      Styles: extras.styles || [],
+      Subjects: extras.subjects || [],
+      Palettes: extras.palettes || [],
+      Mood: extras.mood || "",
+      Room: extras.room || "",
+      Orientation: extras.orientation || "",
+      Source: "Muse Style Quiz",
+      SiteURL: getPublicSiteUrl(),
+      QuizURL: `${getPublicSiteUrl()}/discover`,
+      CreateURL: `${getPublicSiteUrl()}/create`,
+    },
+  })
+}
+
 export async function trackCompletedStyleQuiz(
   email: string,
   profile: {
@@ -453,6 +559,33 @@ export async function trackCompletedStyleQuiz(
       Room: profile.room || "",
       Orientation: profile.orientation || "",
       Source: "Muse Style Quiz",
+      SiteURL: getPublicSiteUrl(),
+      QuizURL: `${getPublicSiteUrl()}/discover`,
+      CreateURL: `${getPublicSiteUrl()}/create`,
+    },
+  })
+}
+
+export async function trackAddedToCart(params: {
+  email: string
+  items: KlaviyoOrderItem[]
+  cartUrl?: string
+}) {
+  const itemNames = params.items.map((i) => i.ProductName)
+  const value = params.items.reduce((sum, i) => sum + i.RowTotal, 0)
+
+  return trackKlaviyoEvent({
+    metric: "Added to Cart",
+    email: params.email,
+    value,
+    uniqueId: `cart-${params.email.trim().toLowerCase()}-${Date.now()}`,
+    properties: {
+      ItemNames: itemNames,
+      Items: params.items,
+      CartURL: publicOrSiteUrl(params.cartUrl, "/cart"),
+      CheckoutURL: publicOrSiteUrl(params.cartUrl, "/cart"),
+      Categories: ["Custom Print", "AI Art"],
+      ItemCount: params.items.reduce((n, i) => n + i.Quantity, 0),
     },
   })
 }
@@ -475,7 +608,7 @@ export async function trackStartedCheckout(params: {
       OrderId: params.orderId,
       ItemNames: itemNames,
       Items: params.items,
-      CheckoutURL: params.checkoutUrl,
+      CheckoutURL: publicOrSiteUrl(params.checkoutUrl, "/create"),
       Categories: ["Custom Print", "AI Art"],
       ItemCount: params.items.reduce((n, i) => n + i.Quantity, 0),
     },
@@ -503,7 +636,9 @@ export async function trackPlacedOrder(params: {
       Items: params.items,
       Categories: ["Custom Print", "AI Art"],
       Brands: ["Muse"],
-      ...(params.checkoutUrl ? { CheckoutURL: params.checkoutUrl } : {}),
+      ...(params.checkoutUrl
+        ? { CheckoutURL: publicOrSiteUrl(params.checkoutUrl, "/create") }
+        : {}),
       ...params.extra,
     },
   })
